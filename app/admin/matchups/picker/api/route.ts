@@ -1,19 +1,14 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getCurrentWeekDates } from "@/lib/dateTime.ts/dateFormatter";
 import { IAdminGamePickerCard } from "@/components/ui/Cards/AdminGamePickerCard";
+import moment from "moment";
 
 // TODO - add admin auth check
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const date = searchParams.get("date");
-
-  if (!date) {
-    return NextResponse.json({ error: "Missing date" }, { status: 400 });
-  }
-
+export async function GET() {
   try {
-    const weekDates = getCurrentWeekDates(date);
+    const now = moment().format("YYYYMMDD");
+    const weekDates = getCurrentWeekDates(now);
 
     const matchups: IAdminGamePickerCard[] = await prisma.potentialMatchup.findMany({
       where: {

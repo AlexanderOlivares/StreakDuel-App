@@ -10,8 +10,8 @@ import Loading from "@/components/utils/Loading";
 import { DayToDateDict } from "@/lib/dateTime.ts/dateFormatter";
 import ComponentError from "@/components/utils/ComponentError";
 
-async function fetchData(date: string) {
-  const response = await fetch(`/admin/matchups/picker/api?date=${date}`);
+async function fetchMatchups() {
+  const response = await fetch("/admin/matchups/picker/api");
   if (!response.ok) {
     throw new Error("An error occurred while fetching data.");
   }
@@ -24,11 +24,10 @@ interface IMatchupPickerQuery {
 }
 
 export default function Picker() {
-  const now = moment();
-  const [date, setDate] = useState<string>(now.format("YYYYMMDD"));
+  const [date, setDate] = useState<string>(moment().format("YYYYMMDD"));
 
   const { data, error, isLoading } = useQuery<IMatchupPickerQuery>(["matchupPicker"], () =>
-    fetchData(date)
+    fetchMatchups()
   );
 
   if (isLoading) return <Loading />;
