@@ -1,6 +1,3 @@
-import Card from "@/components/ui/Cards/Card";
-import Image from "next/image";
-
 export default function Home() {
   return (
     <>
@@ -10,7 +7,7 @@ export default function Home() {
       <p className="py-2">
         Are you in search of this? In terms of Web design,{" "}
         <a className="text-indigo-600" href="https://en.wikipedia.org/wiki/Holy_grail_(web_design)">
-          the "holy grail" is page layout
+          {"the holy grail is page layout"}
         </a>{" "}
         that has 3 columns. It is commonly desired and implemented, but for many years, the various
         ways in which it could be implemented with available technologies all had drawbacks. Because
@@ -19,11 +16,11 @@ export default function Home() {
       </p>
       <p className="py-2">
         As of 2021, the Holy Grail layout is implemented using CSS Flexbox or CSS Grid display. For
-        this example, we're using the{" "}
+        this example, were using the{" "}
         <a className="text-indigo-600" href="https://tailwindcss.com/">
           Tailwind CSS
         </a>{" "}
-        utility framework. As part of it's default classes, Tailwind includes
+        utility framework. As part of its default classes, Tailwind includes
         <a className="text-indigo-600" href="https://tailwindcss.com/docs/flex-direction">
           Flexbox classes
         </a>{" "}
@@ -44,7 +41,7 @@ export default function Home() {
       <div className="flex p-3 bg-indigo-600 rounded text-white hidden md:flex">
         <span className="flex-shrink overflow-hidden whitespace-nowrap">&lt;--------</span>
         <div className="flex-grow flex-shrink-0 overflow-ellipsis text-center">
-          This center column is "fluid" so it grows in width as needed!
+          This center column is fluid so it grows in width as needed!
         </div>
         <span className="flex-shrink overflow-hidden whitespace-nowrap">--------&gt;</span>
       </div>
