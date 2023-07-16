@@ -27,12 +27,11 @@ interface IMatchupPickerQuery {
 export default function Picker() {
   const [date, setDate] = useState<string>(moment().format("YYYYMMDD"));
 
-  const { data, error, isLoading, isFetching } = useQuery<IMatchupPickerQuery>(
-    ["getPotentialMatchups"],
-    () => getPotentialMatchups()
+  const { data, error, isLoading } = useQuery<IMatchupPickerQuery>(["getPotentialMatchups"], () =>
+    getPotentialMatchups()
   );
 
-  if (isLoading || isFetching) return <Loading />;
+  if (isLoading) return <Loading />;
 
   if (!data?.matchups || !data?.weekDates || error) {
     return <ComponentError />;

@@ -2,6 +2,7 @@
 
 import "./globals.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Inter } from "next/font/google";
 import Nav from "@/components/ui/Nav";
 import Footer from "@/components/ui/Footer";
@@ -41,6 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
           <Footer />
         </body>
+        <ReactQueryDevtools initialIsOpen={true} />
       </QueryClientProvider>
     </html>
   );

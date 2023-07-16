@@ -1,4 +1,5 @@
 import moment from "moment";
+import "moment-timezone";
 
 export enum DaysOfWeek {
   Monday = "Monday",
@@ -62,4 +63,8 @@ export function getCurrentWeekDates(givenDate: string) {
   });
 
   return daysMap;
+}
+
+export function humanReadableDate(dateString: string) {
+  return moment(dateString).tz("America/Los_Angeles").format("LLLL");
 }
