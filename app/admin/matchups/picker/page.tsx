@@ -9,13 +9,14 @@ import AdminGamePickerCard, {
 import Loading from "@/components/utils/Loading";
 import { DayToDateDict } from "@/lib/dateTime.ts/dateFormatter";
 import ComponentError from "@/components/utils/ComponentError";
+import axios from "axios";
 
-async function fetchMatchups() {
-  const response = await fetch("/admin/matchups/picker/api");
-  if (!response.ok) {
+async function getPotentialMatchups() {
+  const response = await axios.get("/admin/matchups/picker/api");
+  if (response.status >= 400) {
     throw new Error("An error occurred while fetching data.");
   }
-  return response.json();
+  return response.data;
 }
 
 interface IMatchupPickerQuery {
@@ -26,11 +27,12 @@ interface IMatchupPickerQuery {
 export default function Picker() {
   const [date, setDate] = useState<string>(moment().format("YYYYMMDD"));
 
-  const { data, error, isLoading } = useQuery<IMatchupPickerQuery>(["matchupPicker"], () =>
-    fetchMatchups()
+  const { data, error, isLoading, isFetching } = useQuery<IMatchupPickerQuery>(
+    ["getPotentialMatchups"],
+    () => getPotentialMatchups()
   );
 
-  if (isLoading) return <Loading />;
+  if (isLoading || isFetching) return <Loading />;
 
   if (!data?.matchups || !data?.weekDates || error) {
     return <ComponentError />;

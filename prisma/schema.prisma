@@ -8,11 +8,17 @@ datasource db {
 }
 
 model PotentialMatchup {
-  id         String @id
-  eventId    String
-  gameDate   String
-  gameTime   String
-  name       String
-  league     String
-  gameStatus String
+  id                String   @id @unique
+  eventId           String
+  gameDate          String
+  gameTime          String
+  name              String
+  league            String
+  gameStatus        String
+  adminUseAwayDraw  Boolean?
+  adminUseGame      Boolean?
+  adminUseHomeDraw  Boolean?
+  adminUseMoneyline Boolean?
+  adminUseOverUnder Boolean?
+  drawEligible      Boolean
 }
