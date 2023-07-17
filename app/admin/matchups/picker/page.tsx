@@ -13,13 +13,10 @@ import axios from "axios";
 
 async function getPotentialMatchups() {
   const response = await axios.get("/admin/matchups/picker/api");
-  if (response.status >= 400) {
-    throw new Error("An error occurred while fetching data.");
-  }
   return response.data;
 }
 
-interface IMatchupPickerQuery {
+interface GetPotentialMatchupsQuery {
   matchups: IAdminGamePickerCard[];
   weekDates: DayToDateDict;
 }
@@ -27,8 +24,9 @@ interface IMatchupPickerQuery {
 export default function Picker() {
   const [date, setDate] = useState<string>(moment().format("YYYYMMDD"));
 
-  const { data, error, isLoading } = useQuery<IMatchupPickerQuery>(["getPotentialMatchups"], () =>
-    getPotentialMatchups()
+  const { data, error, isLoading } = useQuery<GetPotentialMatchupsQuery>(
+    ["getPotentialMatchups"],
+    getPotentialMatchups
   );
 
   if (isLoading) return <Loading />;

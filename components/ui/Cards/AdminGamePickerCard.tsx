@@ -12,32 +12,56 @@ export interface IAdminGamePickerCard {
   league: string;
   name: string;
   drawEligible: boolean;
-  adminUseGame: boolean;
-  adminUseAwayDraw?: boolean;
-  adminUseHomeDraw?: boolean;
-  adminUseMoneyline?: boolean;
-  adminUseOverUnder?: boolean;
+  adminUseGame: boolean | null;
+  adminUseAwayDraw?: boolean | null;
+  adminUseHomeDraw?: boolean | null;
+  adminUseMoneyline?: boolean | null;
+  adminUseOverUnder?: boolean | null;
 }
 
 interface UseGameMutationProps {
   id: string;
-  adminUseGame: boolean;
+  adminUseGame: boolean | null;
 }
 
 function updateAdminUseGame(mutationProps: UseGameMutationProps) {
-  const { id, adminUseGame } = mutationProps;
-  return axios.post("/admin/matchups/picker/api", {
-    id,
-    adminUseGame,
-  });
+  return axios.put("/admin/matchups/picker/api/use-game", mutationProps);
+}
+
+export enum MatchupType {
+  Moneyline = "Moneyline",
+  OverUnder = "OverUnder",
+  AwayDraw = "AwayDraw",
+  HomeDraw = "HomeDraw",
+}
+
+interface MatchupTypeMutationProps {
+  id: string;
+  matchupType: MatchupType;
+}
+
+function updateMatchupType(matchup: MatchupTypeMutationProps) {
+  return axios.put("/admin/matchups/picker/api/matchup-type", matchup);
 }
 
 export default function AdminGamePickerCard(props: IAdminGamePickerCard) {
-  const { gameTime, league, name, drawEligible, id, adminUseGame } = props;
+  const {
+    gameTime,
+    league,
+    name,
+    drawEligible,
+    id,
+    adminUseGame,
+    adminUseAwayDraw,
+    adminUseHomeDraw,
+    adminUseMoneyline,
+    adminUseOverUnder,
+  } = props;
+  const radioId = `radio-${id}`;
 
   const queryClient = useQueryClient();
 
-  const mutation = useMutation({
+  const adminUseGameMutation = useMutation({
     mutationFn: (mutationProps: UseGameMutationProps) => updateAdminUseGame(mutationProps),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["getPotentialMatchups"] });
@@ -46,6 +70,20 @@ export default function AdminGamePickerCard(props: IAdminGamePickerCard) {
       console.error(error);
     },
   });
+
+  const updateMatchupTypeMutation = useMutation({
+    mutationFn: (matchupType: MatchupTypeMutationProps) => updateMatchupType(matchupType),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["getPotentialMatchups"] });
+    },
+    onError: error => {
+      console.error(error);
+    },
+  });
+
+  function handleMatchupTypeChange(matchupType: MatchupType) {
+    updateMatchupTypeMutation.mutate({ id, matchupType });
+  }
 
   return (
     <>
@@ -59,7 +97,7 @@ export default function AdminGamePickerCard(props: IAdminGamePickerCard) {
               <span className="label-text">Use Game</span>
               <input
                 type="checkbox"
-                onChange={() => mutation.mutate({ id, adminUseGame })}
+                onChange={() => adminUseGameMutation.mutate({ id, adminUseGame })}
                 checked={adminUseGame ?? false}
                 className="checkbox checkbox-primary"
               />
@@ -69,13 +107,25 @@ export default function AdminGamePickerCard(props: IAdminGamePickerCard) {
             <div className="form-control">
               <label className="label cursor-pointer">
                 <span className="label-text">Moneyline</span>
-                <input type="radio" name="radio-10" className="radio checked:bg-red-500" />
+                <input
+                  checked={adminUseMoneyline ?? false}
+                  onChange={() => handleMatchupTypeChange(MatchupType.Moneyline)}
+                  type="radio"
+                  name={radioId}
+                  className="radio checked:bg-blue-500"
+                />
               </label>
             </div>
             <div className="form-control">
               <label className="label cursor-pointer">
                 <span className="label-text">Over/Under</span>
-                <input type="radio" name="radio-10" className="radio checked:bg-blue-500" />
+                <input
+                  checked={adminUseOverUnder ?? false}
+                  onChange={() => handleMatchupTypeChange(MatchupType.OverUnder)}
+                  type="radio"
+                  name={radioId}
+                  className="radio checked:bg-blue-500"
+                />
               </label>
             </div>
             {drawEligible && (
@@ -85,9 +135,10 @@ export default function AdminGamePickerCard(props: IAdminGamePickerCard) {
                     <span className="label-text">Home Draw</span>
                     <input
                       type="radio"
-                      name="radio-10"
+                      name={radioId}
                       className="radio checked:bg-blue-500"
-                      // checked
+                      checked={adminUseHomeDraw ?? false}
+                      onChange={() => handleMatchupTypeChange(MatchupType.HomeDraw)}
                     />
                   </label>
                 </div>
@@ -96,9 +147,10 @@ export default function AdminGamePickerCard(props: IAdminGamePickerCard) {
                     <span className="label-text">Away Draw</span>
                     <input
                       type="radio"
-                      name="radio-10"
+                      name={radioId}
                       className="radio checked:bg-blue-500"
-                      // checked
+                      checked={adminUseAwayDraw ?? false}
+                      onChange={() => handleMatchupTypeChange(MatchupType.AwayDraw)}
                     />
                   </label>
                 </div>
