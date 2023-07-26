@@ -55,11 +55,9 @@ export function getCurrentWeekDates(givenDate: string) {
   Object.values(dayToEnum).forEach((day, i) => {
     const currentNumericDate = givenNumericDate === 0 ? i - 6 : i + 1;
     const weekdayOffset = currentNumericDate - givenNumericDate;
+    const date = moment.utc(givenDate).add(weekdayOffset, "days").toISOString();
 
-    const date = moment(givenDate).add(weekdayOffset, "days");
-    const dateString = date.format("YYYYMMDD");
-
-    daysMap[day] = dateString;
+    daysMap[day] = date;
   });
 
   return daysMap;
@@ -67,4 +65,11 @@ export function getCurrentWeekDates(givenDate: string) {
 
 export function humanReadableDate(dateString: string) {
   return moment(dateString).tz("America/Los_Angeles").format("LLLL");
+}
+
+export function isSameDay(date1: string, date2: string) {
+  const day1 = moment(date1).tz("America/Los_Angeles");
+  const day2 = moment(date2).tz("America/Los_Angeles");
+
+  return day1.isSame(day2, "day");
 }

@@ -4,13 +4,20 @@ import React from "react";
 import { humanReadableDate } from "@/lib/dateTime.ts/dateFormatter";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+import Image from "next/image";
 
 export interface IAdminGamePickerCard {
-  gameDate: string;
-  gameTime: string;
   id: string;
-  league: string;
-  name: string;
+  idEvent: string;
+  idHomeTeam: string;
+  idAwayTeam: string;
+  idLeague: string;
+  strLeague: string;
+  strEvent: string;
+  strHomeTeam: string;
+  strAwayTeam: string;
+  strTimestamp: string;
+  strThumb: string;
   drawEligible: boolean;
   adminUseGame: boolean | null;
   adminUseAwayDraw?: boolean | null;
@@ -46,9 +53,12 @@ function updateMatchupType(matchup: MatchupTypeMutationProps) {
 
 export default function AdminGamePickerCard(props: IAdminGamePickerCard) {
   const {
-    gameTime,
-    league,
-    name,
+    strLeague,
+    strEvent,
+    strThumb,
+    strTimestamp,
+    strHomeTeam,
+    strAwayTeam,
     drawEligible,
     id,
     adminUseGame,
@@ -88,10 +98,17 @@ export default function AdminGamePickerCard(props: IAdminGamePickerCard) {
   return (
     <>
       <div className="flex flex-grow flex-shrink-0 card m-2 bg-neutral text-neutral-content md:flex">
+        <figure>
+          <Image src={`${strThumb}/preview`} width={1080} height={720} alt={strEvent} />
+        </figure>
         <div className="card-body items-center text-center">
-          <p>{league}</p>
-          <h2 className="card-title">{name}</h2>
-          <p>{humanReadableDate(gameTime)}</p>
+          <p>{strLeague}</p>
+          <div className="flex justify-around">
+            <span className="text-lg mr-5 font-bold">Away Team</span>
+            <span className="text-lg ml-5 font-bold">Home Team</span>
+          </div>
+          <h2 className="card-title">{`${strAwayTeam} at ${strHomeTeam}`}</h2>
+          <p>{humanReadableDate(strTimestamp)}</p>
           <div className="form-control">
             <label className="label cursor-pointer">
               <span className="label-text">Use Game</span>

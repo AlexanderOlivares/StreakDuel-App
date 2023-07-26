@@ -7,7 +7,7 @@ import AdminGamePickerCard, {
   IAdminGamePickerCard,
 } from "@/components/ui/Cards/AdminGamePickerCard";
 import Loading from "@/components/utils/Loading";
-import { DayToDateDict } from "@/lib/dateTime.ts/dateFormatter";
+import { DayToDateDict, isSameDay } from "@/lib/dateTime.ts/dateFormatter";
 import ComponentError from "@/components/utils/ComponentError";
 import axios from "axios";
 
@@ -22,7 +22,7 @@ interface GetPotentialMatchupsQuery {
 }
 
 export default function Picker() {
-  const [date, setDate] = useState<string>(moment().format("YYYYMMDD"));
+  const [date, setDate] = useState<string>(moment().tz("America/Los_Angeles").format("YYYY-MM-DD"));
 
   const { data, error, isLoading } = useQuery<GetPotentialMatchupsQuery>(
     ["getPotentialMatchups"],
@@ -46,7 +46,7 @@ export default function Picker() {
             <a
               key={day}
               onClick={() => setDate(dateString)}
-              className={`tab tab-sm ${date === dateString ? "tab-active" : ""}`}
+              className={`tab tab-sm ${isSameDay(dateString, date) ? "tab-active" : ""}`}
             >
               {day}
             </a>
@@ -54,7 +54,9 @@ export default function Picker() {
         })}
       </div>
       {data.matchups
-        .filter(({ gameDate }) => gameDate === date)
+        .filter(({ strTimestamp }) =>
+          isSameDay(moment(strTimestamp).tz("America/Los_Angeles").format("YYYY-MM-DD"), date)
+        )
         .map(game => {
           return <AdminGamePickerCard key={game.id} {...game} />;
         })}

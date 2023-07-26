@@ -10,15 +10,23 @@ export async function GET() {
     const now = moment().format("YYYYMMDD");
     const weekDates = getCurrentWeekDates(now);
 
+    const dateRanges = Object.values(weekDates).map(date => {
+      const end = moment.utc(date).add(1, "days").toISOString();
+      return {
+        strTimestamp: {
+          gte: date,
+          lt: end,
+        },
+      };
+    });
+
     const matchups: IAdminGamePickerCard[] = await prisma.potentialMatchup.findMany({
       where: {
-        gameDate: {
-          in: Object.values(weekDates),
-        },
+        OR: dateRanges,
       },
       orderBy: [
         {
-          gameTime: "asc",
+          strTimestamp: "asc",
         },
         {
           id: "asc",
