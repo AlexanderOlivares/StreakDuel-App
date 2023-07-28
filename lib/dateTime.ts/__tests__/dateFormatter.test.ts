@@ -1,5 +1,10 @@
 import moment from "moment";
-import { getCurrentWeekDates, humanReadableDate, isSameDay } from "../dateFormatter";
+import {
+  dayRangeLaTimezone,
+  getCurrentWeekDates,
+  humanReadableDate,
+  isSameDay,
+} from "../dateFormatter";
 
 describe("getCurrentWeekDates", () => {
   test("returns a Map with correct dates for week", () => {
@@ -64,5 +69,14 @@ describe("isSameDay", () => {
     const time2 = "2023-07-26T12:10:00+00:00";
 
     expect(isSameDay(time1, time2)).toBe(false);
+  });
+});
+
+describe("dayRangeLaTimezone", () => {
+  it("Returns a UTC date range from midnight to next day LA time", async () => {
+    expect(dayRangeLaTimezone("2023-07-27")).toStrictEqual({
+      gte: "2023-07-27T07:00:00.000Z",
+      lt: "2023-07-28T06:59:59.999Z",
+    });
   });
 });

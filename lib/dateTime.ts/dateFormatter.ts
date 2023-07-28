@@ -10,6 +10,7 @@ export enum DaysOfWeek {
   Saturday = "Saturday",
   Sunday = "Sunday",
   NextMonday = "Next Monday",
+  NextTuesday = "Next Tuesday",
 }
 
 export const dayToEnum: Record<string, DaysOfWeek> = {
@@ -21,6 +22,7 @@ export const dayToEnum: Record<string, DaysOfWeek> = {
   Saturday: DaysOfWeek.Saturday,
   Sunday: DaysOfWeek.Sunday,
   NextMonday: DaysOfWeek.NextMonday,
+  NextTuesday: DaysOfWeek.NextTuesday,
 };
 
 export interface DayToDateDict {
@@ -32,6 +34,7 @@ export interface DayToDateDict {
   [DaysOfWeek.Saturday]: string | null;
   [DaysOfWeek.Sunday]: string | null;
   [DaysOfWeek.NextMonday]: string | null;
+  [DaysOfWeek.NextTuesday]: string | null;
 }
 
 export function getCurrentWeekDates(givenDate: string) {
@@ -50,6 +53,7 @@ export function getCurrentWeekDates(givenDate: string) {
     Saturday: null,
     Sunday: null,
     "Next Monday": null,
+    "Next Tuesday": null,
   };
 
   Object.values(dayToEnum).forEach((day, i) => {
@@ -72,4 +76,14 @@ export function isSameDay(date1: string, date2: string) {
   const day2 = moment(date2).tz("America/Los_Angeles");
 
   return day1.isSame(day2, "day");
+}
+
+export function dayRangeLaTimezone(date: string) {
+  const startOfDay = moment.tz(date, "America/Los_Angeles").startOf("day");
+  const endOfDay = moment(startOfDay).endOf("day");
+
+  return {
+    gte: startOfDay.toISOString(),
+    lt: endOfDay.toISOString(),
+  };
 }

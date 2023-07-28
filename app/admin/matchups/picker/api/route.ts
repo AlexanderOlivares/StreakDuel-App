@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { getCurrentWeekDates } from "@/lib/dateTime.ts/dateFormatter";
+import { dayRangeLaTimezone, getCurrentWeekDates } from "@/lib/dateTime.ts/dateFormatter";
 import moment from "moment";
 import { IAdminGamePickerCard } from "@/components/ui/Cards/AdminGamePickerCard";
 
@@ -11,12 +11,9 @@ export async function GET() {
     const weekDates = getCurrentWeekDates(now);
 
     const dateRanges = Object.values(weekDates).map(date => {
-      const end = moment.utc(date).add(1, "days").toISOString();
+      const range = dayRangeLaTimezone(date);
       return {
-        strTimestamp: {
-          gte: date,
-          lt: end,
-        },
+        strTimestamp: range,
       };
     });
 
@@ -34,7 +31,12 @@ export async function GET() {
       ],
     });
 
-    return NextResponse.json({ matchups, weekDates }, { status: 200 });
+    // Next Tuesday is not part of the current week's cycle of games so safe to omit it. It's only used
+    // above to get Next Monday's game times that officially start on next Tuesday in UTC time.
+    // eslint-disable-next-line
+    const { "Next Tuesday": _, ...relevantDays } = weekDates;
+
+    return NextResponse.json({ matchups, weekDates: relevantDays }, { status: 200 });
   } catch (error) {
     console.log(error);
     return NextResponse.json({ error }, { status: 500 });
