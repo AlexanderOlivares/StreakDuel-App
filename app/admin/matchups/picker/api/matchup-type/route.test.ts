@@ -3,8 +3,8 @@ import { falsifyUnusedMatchupTypes } from "./route";
 
 describe("falsifyUnusedMatchupTypes", () => {
   const updateBody = falsifyUnusedMatchupTypes(MatchupType.Moneyline);
-  test("has 4 adminUse properties", () => {
-    expect(Object.keys(updateBody).length).toBe(4);
+  test("has 5 adminUse properties", () => {
+    expect(Object.keys(updateBody).length).toBe(5);
   });
 
   test("all keys start with adminUse", () => {

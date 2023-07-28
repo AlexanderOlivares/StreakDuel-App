@@ -24,6 +24,7 @@ export interface IAdminGamePickerCard {
   adminUseHomeDraw?: boolean | null;
   adminUseMoneyline?: boolean | null;
   adminUseOverUnder?: boolean | null;
+  adminUseSpread?: boolean | null;
 }
 
 interface UseGameMutationProps {
@@ -38,6 +39,7 @@ function updateAdminUseGame(mutationProps: UseGameMutationProps) {
 export enum MatchupType {
   Moneyline = "Moneyline",
   OverUnder = "OverUnder",
+  Spread = "Spread",
   AwayDraw = "AwayDraw",
   HomeDraw = "HomeDraw",
 }
@@ -65,6 +67,7 @@ export default function AdminGamePickerCard(props: IAdminGamePickerCard) {
     adminUseAwayDraw,
     adminUseHomeDraw,
     adminUseMoneyline,
+    adminUseSpread,
     adminUseOverUnder,
   } = props;
   const radioId = `radio-${id}`;
@@ -98,11 +101,13 @@ export default function AdminGamePickerCard(props: IAdminGamePickerCard) {
   return (
     <>
       <div className="flex flex-grow flex-shrink-0 card m-2 bg-neutral text-neutral-content md:flex">
+        <div className="items-center my-2 text-center">
+          <p>{strLeague}</p>
+        </div>
         <figure>
           <Image src={`${strThumb}/preview`} width={1080} height={720} alt={strEvent} />
         </figure>
         <div className="card-body items-center text-center">
-          <p>{strLeague}</p>
           <div className="flex justify-around">
             <span className="text-lg mr-5 font-bold">Away Team</span>
             <span className="text-lg ml-5 font-bold">Home Team</span>
@@ -127,6 +132,18 @@ export default function AdminGamePickerCard(props: IAdminGamePickerCard) {
                 <input
                   checked={adminUseMoneyline ?? false}
                   onChange={() => handleMatchupTypeChange(MatchupType.Moneyline)}
+                  type="radio"
+                  name={radioId}
+                  className="radio checked:bg-blue-500"
+                />
+              </label>
+            </div>
+            <div className="form-control">
+              <label className="label cursor-pointer">
+                <span className="label-text">Spread</span>
+                <input
+                  checked={adminUseSpread ?? false}
+                  onChange={() => handleMatchupTypeChange(MatchupType.Spread)}
                   type="radio"
                   name={radioId}
                   className="radio checked:bg-blue-500"

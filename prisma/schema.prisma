@@ -25,4 +25,5 @@ model PotentialMatchup {
   strLeague         String
   strThumb          String
   strTimestamp      String
+  adminUseSpread    Boolean?
 }

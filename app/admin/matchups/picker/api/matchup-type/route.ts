@@ -14,6 +14,7 @@ const updateAdminUseGameSchema = z.object({
     MatchupType.OverUnder,
     MatchupType.HomeDraw,
     MatchupType.HomeDraw,
+    MatchupType.Spread,
   ]),
 });
 
