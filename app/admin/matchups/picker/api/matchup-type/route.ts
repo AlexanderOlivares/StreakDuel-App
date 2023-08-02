@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { z } from "zod";
-import { MatchupType } from "@/components/ui/Cards/AdminGamePickerCard";
+
+const OddsTypeEnum = z.enum(["money-line", "totals", "pointspread"]);
 
 /*
 Update zod version and chain uuid() to validate id field when this
@@ -9,13 +10,8 @@ open issue is resolved https://github.com/colinhacks/zod/issues/2468
 */
 const updateAdminUseGameSchema = z.object({
   id: z.string(), //.uuid(),
-  matchupType: z.enum([
-    MatchupType.Moneyline,
-    MatchupType.OverUnder,
-    MatchupType.HomeDraw,
-    MatchupType.HomeDraw,
-    MatchupType.Spread,
-  ]),
+  oddsType: OddsTypeEnum.optional(),
+  drawTeam: z.string().min(6).max(6).optional(),
 });
 
 export async function PUT(req: NextRequest) {
@@ -28,9 +24,12 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: errorMessage }, { status: 400 });
     }
 
-    const { id, matchupType } = validation.data;
+    const { id, oddsType, drawTeam } = validation.data;
 
-    const data = falsifyUnusedMatchupTypes(matchupType);
+    const data = {
+      ...(oddsType ? { oddsType } : null),
+      ...(drawTeam ? { drawTeam } : null),
+    };
 
     await prisma.potentialMatchup.update({
       where: {
@@ -44,19 +43,4 @@ export async function PUT(req: NextRequest) {
     console.log(error);
     return NextResponse.json({ error }, { status: 500 });
   }
-}
-
-export function falsifyUnusedMatchupTypes(selectedMatchupType: MatchupType) {
-  const updateBody: Record<string, boolean> = {};
-
-  for (const matchupType of Object.values(MatchupType)) {
-    const columnName = `adminUse${matchupType}`;
-    if (matchupType === selectedMatchupType) {
-      updateBody[columnName] = true;
-    } else {
-      updateBody[columnName] = false;
-    }
-  }
-
-  return updateBody;
 }

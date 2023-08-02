@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import moment from "moment";
 import { useQuery } from "@tanstack/react-query";
 import AdminGamePickerCard, {
-  IAdminGamePickerCard,
+  AdminPotentialMatchup,
 } from "@/components/ui/Cards/AdminGamePickerCard";
 import Loading from "@/components/utils/Loading";
 import { DayToDateDict, isSameDay } from "@/lib/dateTime.ts/dateFormatter";
@@ -17,7 +17,7 @@ async function getPotentialMatchups() {
 }
 
 interface GetPotentialMatchupsQuery {
-  matchups: IAdminGamePickerCard[];
+  matchups: AdminPotentialMatchup[];
   weekDates: DayToDateDict;
 }
 
