@@ -16,7 +16,7 @@ export type OddsScope =
   | "3rd-quarter"
   | "4th-quarter";
 
-export interface AdminPotentialMatchup {
+export interface Matchup {
   id: string;
   idEvent: string;
   idHomeTeam: string;
@@ -31,25 +31,22 @@ export interface AdminPotentialMatchup {
   drawEligible: boolean;
   oddsType: string;
   oddsScope: string;
-  adminUseGame: boolean | null;
   drawTeam?: string | null;
+  adminSelected: boolean;
+  used: boolean;
+  result: string;
+  locked: boolean;
+  adminUnlocked: boolean;
+  adminCorrected: boolean;
 }
 
 interface UseGameMutationProps {
   id: string;
-  adminUseGame: boolean | null;
+  adminSelected: boolean | null;
 }
 
 function updateAdminUseGame(mutationProps: UseGameMutationProps) {
   return axios.put("/admin/matchups/picker/api/use-game", mutationProps);
-}
-
-export enum OddsTypeEnum {
-  Moneyline = "Moneyline",
-  OverUnder = "OverUnder",
-  Spread = "Spread",
-  AwayDraw = "AwayDraw",
-  HomeDraw = "HomeDraw",
 }
 
 interface MatchupTypeMutationProps {
@@ -62,7 +59,7 @@ function updateMatchupType(matchup: MatchupTypeMutationProps) {
   return axios.put("/admin/matchups/picker/api/matchup-type", matchup);
 }
 
-export default function AdminGamePickerCard(props: AdminPotentialMatchup) {
+export default function AdminGamePickerCard(props: Matchup) {
   const {
     strLeague,
     strEvent,
@@ -74,7 +71,7 @@ export default function AdminGamePickerCard(props: AdminPotentialMatchup) {
     id,
     idHomeTeam,
     idAwayTeam,
-    adminUseGame,
+    adminSelected,
     drawTeam,
     oddsType,
   } = props;
@@ -127,8 +124,8 @@ export default function AdminGamePickerCard(props: AdminPotentialMatchup) {
               <span className="label-text">Use Game</span>
               <input
                 type="checkbox"
-                onChange={() => adminUseGameMutation.mutate({ id, adminUseGame })}
-                checked={adminUseGame ?? false}
+                onChange={() => adminUseGameMutation.mutate({ id, adminSelected })}
+                checked={adminSelected ?? false}
                 className="checkbox checkbox-primary"
               />
             </label>

@@ -7,26 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model PotentialMatchup {
-  id           String   @id @unique
-  adminUseGame Boolean?
-  drawEligible Boolean
-  idAwayTeam   String
-  idEvent      String
-  idHomeTeam   String
-  idLeague     String
-  strAwayTeam  String
-  strEvent     String
-  strHomeTeam  String
-  strLeague    String
-  strThumb     String
-  strTimestamp String
-  oddsScope    String
-  oddsType     String
-  drawTeam     String?
-}
-
-model Matchup {
+model Matchups {
   id             String  @id @unique
   drawEligible   Boolean
   idEvent        String
@@ -39,19 +20,31 @@ model Matchup {
   strAwayTeam    String
   strTimestamp   String
   strThumb       String
-  adminSelected  Boolean
-  oddsGameId     String
-  homeOdds       String
-  awayOdds       String
-  drawOdds       String?
-  lastOddsUpdate String
-  oddsHistory    Json
   oddsType       String
   oddsScope      String
+  drawTeam       String?
+  adminSelected  Boolean
+  used           Boolean
   result         String
   locked         Boolean
   adminUnlocked  Boolean
   adminCorrected Boolean
-  homeSelected   Int
-  awaySelected   Int
+  Odds           Odds?
+}
+
+model Odds {
+  id         String   @id @unique
+  matchupId  String   @unique
+  oddsGameId Int
+  sportsbook String
+  homeOdds   Int?
+  awayOdds   Int?
+  drawOdds   String?
+  overOdds   String?
+  underOdds  String?
+  homeSpread Decimal?
+  awaySpread Decimal?
+  total      Decimal?
+  lastUpdate String
+  Matchups   Matchups @relation(fields: [matchupId], references: [id])
 }

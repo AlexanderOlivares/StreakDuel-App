@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { dayRangeLaTimezone, getCurrentWeekDates } from "@/lib/dateTime.ts/dateFormatter";
 import moment from "moment";
-import { AdminPotentialMatchup } from "@/components/ui/Cards/AdminGamePickerCard";
+import { Matchup } from "@/components/ui/Cards/AdminGamePickerCard";
 
 // TODO - add admin auth check
 export async function GET() {
@@ -17,7 +17,7 @@ export async function GET() {
       };
     });
 
-    const matchups: AdminPotentialMatchup[] = await prisma.potentialMatchup.findMany({
+    const matchups: Matchup[] = await prisma.matchups.findMany({
       where: {
         OR: dateRanges,
       },

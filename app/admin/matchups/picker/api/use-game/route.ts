@@ -6,28 +6,28 @@ import { z } from "zod";
 Update zod version and chain uuid() to validate id field when this
 open issue is resolved https://github.com/colinhacks/zod/issues/2468
 */
-const updateAdminUseGameSchema = z.object({
+const updateAdminSelectedSchema = z.object({
   id: z.string(), //.uuid(),
-  adminUseGame: z.boolean().nullable(),
+  adminSelected: z.boolean().nullable(),
 });
 
 export async function PUT(req: NextRequest) {
   try {
-    const validation = updateAdminUseGameSchema.safeParse(await req.json());
+    const validation = updateAdminSelectedSchema.safeParse(await req.json());
 
     if (!validation.success) {
       console.log(validation.error);
       return NextResponse.json({ error: "Validation error" }, { status: 400 });
     }
 
-    const { id, adminUseGame } = validation.data;
+    const { id, adminSelected } = validation.data;
 
-    await prisma.potentialMatchup.update({
+    await prisma.matchups.update({
       where: {
         id: id,
       },
       data: {
-        adminUseGame: !adminUseGame,
+        adminSelected: !adminSelected,
       },
     });
 

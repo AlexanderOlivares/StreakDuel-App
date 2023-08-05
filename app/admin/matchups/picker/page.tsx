@@ -3,9 +3,7 @@
 import React, { useState } from "react";
 import moment from "moment";
 import { useQuery } from "@tanstack/react-query";
-import AdminGamePickerCard, {
-  AdminPotentialMatchup,
-} from "@/components/ui/Cards/AdminGamePickerCard";
+import AdminGamePickerCard, { Matchup } from "@/components/ui/Cards/AdminGamePickerCard";
 import Loading from "@/components/utils/Loading";
 import { DayToDateDict, isSameDay } from "@/lib/dateTime.ts/dateFormatter";
 import ComponentError from "@/components/utils/ComponentError";
@@ -16,15 +14,15 @@ async function getPotentialMatchups() {
   return response.data;
 }
 
-interface GetPotentialMatchupsQuery {
-  matchups: AdminPotentialMatchup[];
+interface GetMatchupsQuery {
+  matchups: Matchup[];
   weekDates: DayToDateDict;
 }
 
 export default function Picker() {
   const [date, setDate] = useState<string>(moment().tz("America/Los_Angeles").format("YYYY-MM-DD"));
 
-  const { data, error, isLoading } = useQuery<GetPotentialMatchupsQuery>(
+  const { data, error, isLoading } = useQuery<GetMatchupsQuery>(
     ["getPotentialMatchups"],
     getPotentialMatchups
   );
