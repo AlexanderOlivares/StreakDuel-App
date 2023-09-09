@@ -25,23 +25,26 @@ model Matchups {
   drawTeam       String?
   adminSelected  Boolean
   used           Boolean
-  result         String
+  awayScore      Int?
+  homeScore      Int?
+  pointsTotal    Int?
+  status         String
   locked         Boolean
   adminUnlocked  Boolean
   adminCorrected Boolean
-  Odds           Odds?
+  Odds           Odds[]
 }
 
 model Odds {
   id         String   @id @unique
-  matchupId  String   @unique
+  matchupId  String
   oddsGameId Int
   sportsbook String
   homeOdds   Int?
   awayOdds   Int?
-  drawOdds   String?
-  overOdds   String?
-  underOdds  String?
+  drawOdds   Int?
+  overOdds   Int?
+  underOdds  Int?
   homeSpread Decimal?
   awaySpread Decimal?
   total      Decimal?
