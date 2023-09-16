@@ -25,13 +25,13 @@ model Matchups {
   drawTeam       String?
   adminSelected  Boolean
   used           Boolean
+  locked         Boolean
+  adminUnlocked  Boolean
+  adminCorrected Boolean
   awayScore      Int?
   homeScore      Int?
   pointsTotal    Int?
   status         String
-  locked         Boolean
-  adminUnlocked  Boolean
-  adminCorrected Boolean
   Odds           Odds[]
 }
 
@@ -42,12 +42,12 @@ model Odds {
   sportsbook String
   homeOdds   Int?
   awayOdds   Int?
+  homeSpread Float?
+  awaySpread Float?
+  total      Float?
+  lastUpdate String
   drawOdds   Int?
   overOdds   Int?
   underOdds  Int?
-  homeSpread Decimal?
-  awaySpread Decimal?
-  total      Decimal?
-  lastUpdate String
   Matchups   Matchups @relation(fields: [matchupId], references: [id])
 }
