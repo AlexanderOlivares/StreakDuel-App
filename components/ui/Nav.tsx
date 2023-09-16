@@ -1,6 +1,11 @@
 import React from "react";
+import { signIn, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
+import Image from "next/image";
 
 export default function Nav() {
+  const { data: session, status } = useSession();
+
   return (
     <div className="navbar bg-base-100">
       <div className="navbar-start">
@@ -70,7 +75,49 @@ export default function Nav() {
         </ul>
       </div>
       <div className="navbar-end">
-        <a className="btn">Button</a>
+        {status === "authenticated" ? (
+          <div className="dropdown dropdown-end">
+            <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
+              {session.user?.image ? (
+                <div className="w-10 rounded-full">
+                  <Image
+                    alt={`${session.user?.name}-avatar`}
+                    width={100}
+                    height={100}
+                    src={session.user?.image}
+                  />
+                </div>
+              ) : (
+                <div className="avatar placeholder">
+                  <div className="bg-neutral-focus text-neutral-content rounded-full w-12">
+                    <span>MX</span>
+                  </div>
+                </div>
+              )}
+            </label>
+            <ul
+              tabIndex={0}
+              className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52"
+            >
+              <li>
+                <a className="justify-between">
+                  Profile
+                  <span className="badge">New</span>
+                </a>
+              </li>
+              <li>
+                <a>Settings</a>
+              </li>
+              <li>
+                <a onClick={() => signOut()}>Logout</a>
+              </li>
+            </ul>
+          </div>
+        ) : (
+          <a className="btn" onClick={() => signIn("google")}>
+            {"Login"}
+          </a>
+        )}
       </div>
     </div>
   );
