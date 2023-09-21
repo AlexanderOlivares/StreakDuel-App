@@ -2,12 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { z } from "zod";
 
-/*
-Update zod version and chain uuid() to validate id field when this
-open issue is resolved https://github.com/colinhacks/zod/issues/2468
-*/
 const updateAdminSelectedSchema = z.object({
-  id: z.string(), //.uuid(),
+  id: z.string().uuid(),
   adminSelected: z.boolean().nullable(),
 });
 

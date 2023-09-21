@@ -4,12 +4,8 @@ import { z } from "zod";
 
 const OddsTypeEnum = z.enum(["money-line", "totals", "pointspread"]);
 
-/*
-Update zod version and chain uuid() to validate id field when this
-open issue is resolved https://github.com/colinhacks/zod/issues/2468
-*/
 const oddsTypeSchema = z.object({
-  id: z.string(), //.uuid(),
+  id: z.string().uuid(),
   oddsType: OddsTypeEnum.optional(),
   drawTeam: z.string().min(6).max(6).optional(),
 });
