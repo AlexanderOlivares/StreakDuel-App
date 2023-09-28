@@ -3,12 +3,12 @@
 import React, { useState } from "react";
 import moment from "moment";
 import { useQuery } from "@tanstack/react-query";
-import { Matchup } from "@/components/ui/Cards/AdminGamePickerCard";
 import Loading from "@/components/utils/Loading";
 import { DayToDateDict, isSameDay } from "@/lib/dateTime.ts/dateFormatter";
 import ComponentError from "@/components/utils/ComponentError";
 import axios from "axios";
-import MatchupCard from "@/components/ui/Cards/MatchupCard";
+import MatchupCard, { MatchupWithOdds } from "@/components/ui/Cards/MatchupCard";
+import { useParlayContext } from "./context/ParlayProvider";
 
 async function getMatchups() {
   const response = await axios.get("/api/matchup");
@@ -16,11 +16,12 @@ async function getMatchups() {
 }
 
 interface GetMatchupsQuery {
-  matchups: Matchup[];
+  matchups: MatchupWithOdds[];
   weekDates: DayToDateDict;
 }
 
 export default function MatchupBoard() {
+  const parlayContext = useParlayContext();
   const [date, setDate] = useState<string>(moment().tz("America/Los_Angeles").format("YYYY-MM-DD"));
 
   const { data, error, isLoading } = useQuery<GetMatchupsQuery>(["getMatchups"], getMatchups);
@@ -30,6 +31,8 @@ export default function MatchupBoard() {
   if (!data?.matchups || !data?.weekDates || error) {
     return <ComponentError />;
   }
+
+  console.log(parlayContext);
 
   return (
     <>
