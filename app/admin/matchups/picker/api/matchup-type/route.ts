@@ -7,7 +7,7 @@ const OddsTypeEnum = z.enum(["money-line", "totals", "pointspread"]);
 const oddsTypeSchema = z.object({
   id: z.string().uuid(),
   oddsType: OddsTypeEnum.optional(),
-  drawTeam: z.string().min(6).max(6).optional(),
+  drawTeam: z.string().optional(),
 });
 
 export async function PUT(req: NextRequest) {

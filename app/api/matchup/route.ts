@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { dayRangeLaTimezone, getCurrentWeekDates } from "@/lib/dateTime.ts/dateFormatter";
 import moment from "moment";
-import { Matchup } from "@/components/ui/Cards/AdminGamePickerCard";
+import { MatchupWithOdds } from "@/components/ui/Cards/MatchupCard";
 
 export async function GET() {
   try {
@@ -11,11 +11,12 @@ export async function GET() {
     const today = dayRangeLaTimezone(now);
     const nextDay = dayRangeLaTimezone(moment(now).add(1, "days").format("YYYYMMDD"));
 
-    const matchups: Matchup[] = await prisma.matchups.findMany({
+    const matchups: MatchupWithOdds[] = await prisma.matchups.findMany({
       where: {
         OR: [today, nextDay].map(dateRange => ({ strTimestamp: dateRange })),
         used: true,
       },
+      include: { Odds: true },
       orderBy: [
         {
           strTimestamp: "asc",

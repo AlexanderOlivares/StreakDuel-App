@@ -72,8 +72,6 @@ export default function AdminGamePickerCard(props: Matchup) {
     strAwayTeam,
     drawEligible,
     id,
-    idHomeTeam,
-    idAwayTeam,
     adminSelected,
     drawTeam,
     oddsType,
@@ -179,8 +177,8 @@ export default function AdminGamePickerCard(props: Matchup) {
                       type="radio"
                       name={radioId}
                       className="radio checked:bg-blue-500"
-                      checked={drawTeam === idHomeTeam}
-                      onChange={() => handleMatchupTypeChange({ id, drawTeam: idHomeTeam })}
+                      checked={drawTeam === strHomeTeam}
+                      onChange={() => handleMatchupTypeChange({ id, drawTeam: strHomeTeam })}
                     />
                   </label>
                 </div>
@@ -191,8 +189,8 @@ export default function AdminGamePickerCard(props: Matchup) {
                       type="radio"
                       name={radioId}
                       className="radio checked:bg-blue-500"
-                      checked={drawTeam === idAwayTeam}
-                      onChange={() => handleMatchupTypeChange({ id, drawTeam: idAwayTeam })}
+                      checked={drawTeam === strAwayTeam}
+                      onChange={() => handleMatchupTypeChange({ id, drawTeam: strAwayTeam })}
                     />
                   </label>
                 </div>

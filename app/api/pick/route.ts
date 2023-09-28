@@ -54,27 +54,27 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "You have a locked pick" }, { status: 403 });
     }
 
-    if (!latestParlay) {
+    // existing parlay but no games have started yet
+    if (latestParlay && !latestParlay.locked) {
+      parlayId = latestParlay.id;
+    } else {
+      // Coming off of a loss or user's first ever parlay
       const { id } = await prisma.parlay.create({
         data: {
           userId: user.id,
         },
       });
       parlayId = id;
-    } else {
-      parlayId = latestParlay.id;
     }
 
-    //  const latestPick = await prisma.pick.findFirst({
-    //    where: {
-    //      userId: user.id,
-    //    },
-    //    orderBy: {
-    //      createdAt: "desc",
-    //    },
-    //  });
-
     const { matchupId, useLatestOdds, pick } = validation.data;
+
+    /**
+     * Still need to check for updates
+     * 1. changing pick to other team
+     * 2. updating the acceptance of latest odds
+     * 3. removing pick prior to parlay locking
+     */
 
     const matchup = await prisma.matchups.findUnique({
       where: { id: matchupId },
@@ -85,9 +85,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No odds found for matchup" }, { status: 500 });
     }
 
-    const locked = false; // TODO check if were past game start time here
-
-    if (locked) {
+    if (matchup.locked) {
       return NextResponse.json(
         { error: "Game has already started. Matchup is locked" },
         { status: 403 }
@@ -104,7 +102,7 @@ export async function POST(req: NextRequest) {
         useLatestOdds,
         oddsId: odds[0].id,
         matchupId,
-        locked,
+        locked: false,
         pick,
       },
     });

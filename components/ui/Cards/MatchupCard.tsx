@@ -45,13 +45,34 @@ export interface Matchup {
   adminCorrected: boolean;
 }
 
+export interface Odds {
+  [key: string]: number | null | undefined | string | Date;
+  id: string;
+  matchupId: string;
+  oddsGameId: number;
+  sportsbook: string;
+  homeOdds?: number | null;
+  awayOdds?: number | null;
+  drawOdds?: number | null;
+  overOdds?: number | null;
+  underOdds?: number | null;
+  homeSpread?: number | null;
+  awaySpread?: number | null;
+  total?: number | null;
+  createdAt?: Date;
+}
+
+export interface MatchupWithOdds extends Matchup {
+  Odds: Odds[];
+}
+
 interface MakePickMutationProps {
   matchupId: string;
   useLatestOdds: boolean;
   pick: string;
 }
 
-export default function MatchupCard(props: Matchup) {
+export default function MatchupCard(props: MatchupWithOdds) {
   const {
     strLeague,
     strEvent,
@@ -67,6 +88,7 @@ export default function MatchupCard(props: Matchup) {
     oddsType,
     // status,
     locked,
+    Odds,
   } = props;
   // TODO make checkboxes radios
   // const radioId = `radio-${id}`;
@@ -105,10 +127,12 @@ export default function MatchupCard(props: Matchup) {
           <h2 className="card-title">{`${strAwayTeam} at ${strHomeTeam}`}</h2>
           <p>{humanReadableDate(strTimestamp)}</p>
           <div className="text-lg mr-5 font-bold">{ODDS_TYPE_LOOKUP[oddsType]}</div>
+          {oddsType === "totals" && <div className="text-lg mr-5 font-bold">{Odds[0].total}</div>}
           <div className="card-actions mt-3 justify-center">
             <div className="form-control">
+              <div className="label-text">{oddsType === "totals" ? "Over" : strAwayTeam}</div>
+              {oddsType === "pointspread" && Odds[0].awaySpread}
               <label className="label cursor-pointer">
-                <span className="label-text">Away</span>
                 <input
                   type="checkbox"
                   disabled={locked}
@@ -116,31 +140,40 @@ export default function MatchupCard(props: Matchup) {
                     upsertPickMutation.mutate({
                       matchupId: id,
                       useLatestOdds: true,
-                      pick: strAwayTeam,
+                      pick: oddsType === "totals" ? "over" : strAwayTeam,
                     })
                   }
                   checked={locked}
                   className="checkbox checkbox-primary"
                 />
               </label>
+              <div className="label-text">
+                {oddsType === "totals" ? Odds[0].overOdds : Odds[0].awayOdds}
+              </div>
             </div>
             <div className="form-control">
-              <label className="label cursor-pointer">
-                <span className="label-text">Home</span>
-                <input
-                  type="checkbox"
-                  disabled={locked}
-                  onChange={() =>
-                    upsertPickMutation.mutate({
-                      matchupId: id,
-                      useLatestOdds: true,
-                      pick: strAwayTeam,
-                    })
-                  }
-                  checked={false}
-                  className="checkbox checkbox-primary"
-                />
-              </label>
+              <div className="label-text">{oddsType === "totals" ? "Under" : strHomeTeam}</div>
+              {oddsType === "pointspread" && Odds[0].homeSpread}
+              <div className="flex items-center">
+                <label className="label cursor-pointer">
+                  <input
+                    type="checkbox"
+                    disabled={locked}
+                    onChange={() =>
+                      upsertPickMutation.mutate({
+                        matchupId: id,
+                        useLatestOdds: true,
+                        pick: oddsType === "totals" ? "under" : strHomeTeam,
+                      })
+                    }
+                    checked={false}
+                    className="checkbox checkbox-primary"
+                  />
+                </label>
+              </div>
+              <div className="label-text">
+                {oddsType === "totals" ? Odds[0].underOdds : Odds[0].homeOdds}
+              </div>
             </div>
           </div>
         </div>
