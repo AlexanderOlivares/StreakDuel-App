@@ -2,9 +2,15 @@ import React from "react";
 import { signIn, signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
+import { useParlayContext } from "@/app/context/ParlayProvider";
 
 export default function Nav() {
   const { data: session, status } = useSession();
+  const { state: parlayState } = useParlayContext();
+  console.log({
+    session,
+    status,
+  });
 
   return (
     <div className="navbar bg-base-100">
@@ -75,6 +81,7 @@ export default function Nav() {
         </ul>
       </div>
       <div className="navbar-end">
+        {/* <div className="mr-5">Points {parlayState.parlays[0].pointsAwarded || 100}</div> */}
         {status === "authenticated" ? (
           <div className="dropdown dropdown-end">
             <label tabIndex={0} className="btn btn-ghost btn-circle avatar">

@@ -32,7 +32,7 @@ export default function MatchupBoard() {
     return <ComponentError />;
   }
 
-  console.log(parlayContext);
+  console.log({ parlayContext });
 
   return (
     <>

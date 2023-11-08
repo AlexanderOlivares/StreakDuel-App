@@ -1,12 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { humanReadableDate } from "@/lib/dateTime.ts/dateFormatter";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
 import Image from "next/image";
 import { ODDS_TYPE_LOOKUP } from "@/lib/textFormatting.ts/constants";
-// import { useSession } from "next-auth/react";
+import ConfirmPickModal from "../modals/ConfirmPickModal";
+import { useParlayContext } from "@/app/context/ParlayProvider";
 
 export type OddsType = "money-line" | "totals" | "pointspread";
 export type OddsScope =
@@ -30,6 +29,8 @@ export interface Matchup {
   strAwayTeam: string;
   strTimestamp: string;
   strThumb: string;
+  awayBadgeId: string;
+  homeBadgeId: string;
   drawEligible: boolean;
   oddsType: string;
   oddsScope: string;
@@ -66,17 +67,13 @@ export interface MatchupWithOdds extends Matchup {
   Odds: Odds[];
 }
 
-interface MakePickMutationProps {
-  matchupId: string;
-  useLatestOdds: boolean;
-  pick: string;
-}
-
 export default function MatchupCard(props: MatchupWithOdds) {
   const {
     strLeague,
-    strEvent,
-    strThumb,
+    // strEvent,
+    // strThumb,
+    awayBadgeId,
+    homeBadgeId,
     strTimestamp,
     strHomeTeam,
     strAwayTeam,
@@ -86,96 +83,171 @@ export default function MatchupCard(props: MatchupWithOdds) {
     // idAwayTeam,
     // drawTeam,
     oddsType,
-    // status,
-    locked,
+    status,
+    // locked,
     Odds,
   } = props;
-  // TODO make checkboxes radios
-  // const radioId = `radio-${id}`;
-  // const { data: session, status: authStatus } = useSession();
+  const {
+    awayOdds,
+    homeOdds,
+    overOdds,
+    underOdds,
+    total,
+    awaySpread,
+    homeSpread,
+    id: oddsId,
+  } = Odds[0];
+  const parlayContext = useParlayContext();
+  const { activePicks } = parlayContext.state;
+  const [confirmPickModalOpen, setConfirmPickModalOpen] = useState<boolean>(false);
+  const [pick, setPick] = useState<any>(""); // TODO make interface
 
-  const queryClient = useQueryClient();
-
-  const upsertPickMutation = useMutation({
-    mutationFn: (mutationProps: MakePickMutationProps) => upsertPick(mutationProps),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["getMatchups"] });
-    },
-    onError: ({ error }) => {
-      console.error(error);
-    },
-  });
-
-  function upsertPick(mutationProps: MakePickMutationProps) {
-    return axios.post("/api/pick", mutationProps);
+  // TODO  set this in context
+  function handlePick(pickVerticalBarOdds: string) {
+    // TODO make regex to verify the string pattern
+    const [pick, pickOdds, badge] = pickVerticalBarOdds.split("|");
+    console.log({
+      pick,
+      pickOdds,
+    });
+    parlayContext.dispatch({
+      type: "addActivePick",
+      payload: {
+        ...parlayContext.state,
+        activePicks: [
+          ...activePicks,
+          {
+            matchupId: id,
+            oddsId,
+            pickOdds: Number(pickOdds),
+            pick,
+            badge,
+            oddsType,
+          },
+        ],
+      },
+    });
+    setConfirmPickModalOpen(true);
   }
+
+  const formatOdds = (odds: number) => (odds > 0 ? `+${odds}` : odds);
 
   return (
     <>
+      <ConfirmPickModal
+        open={confirmPickModalOpen}
+        setConfirmPickModalOpen={setConfirmPickModalOpen}
+      />
       <div className="flex flex-grow flex-shrink-0 card m-2 bg-neutral text-neutral-content md:flex">
-        <div className="items-center my-2 text-center">
-          <p>{`${locked ? "locked" : ""} ${strLeague}`}</p>
-        </div>
-        <figure>
-          <Image src={`${strThumb}/preview`} width={1080} height={720} alt={strEvent} />
-        </figure>
-        <div className="card-body items-center text-center">
-          <div className="flex justify-around">
-            <span className="text-lg mr-5 font-bold">Away Team</span>
-            <span className="text-lg ml-5 font-bold">Home Team</span>
+        <div className="stats shadow flex rounded-none">
+          <div className="stat place-items-start">
+            <div className="stat-title">{strLeague}</div>
           </div>
-          <h2 className="card-title">{`${strAwayTeam} at ${strHomeTeam}`}</h2>
-          <p>{humanReadableDate(strTimestamp)}</p>
-          <div className="text-lg mr-5 font-bold">{ODDS_TYPE_LOOKUP[oddsType]}</div>
-          {oddsType === "totals" && <div className="text-lg mr-5 font-bold">{Odds[0].total}</div>}
-          <div className="card-actions mt-3 justify-center">
-            <div className="form-control">
-              <div className="label-text">{oddsType === "totals" ? "Over" : strAwayTeam}</div>
-              {oddsType === "pointspread" && Odds[0].awaySpread}
-              <label className="label cursor-pointer">
+
+          <div className="stat place-items-center">
+            <div className="stat-title">{`${
+              status !== "NS" ? "locked" : humanReadableDate(strTimestamp).slice(-8)
+            }`}</div>
+          </div>
+
+          <div className="stat place-items-end">
+            <div className="stat-title">{oddsType}</div>
+          </div>
+        </div>
+        <div className="card-body items-center text-center">
+          <h2 className="card-title mb-3 text-xl">{`${strAwayTeam} at ${strHomeTeam}`}</h2>
+          <div className="flex justify-around">
+            <div>
+              <Image
+                src={`${awayBadgeId}/preview`}
+                width={250}
+                height={250}
+                alt={`${strAwayTeam}-logo`}
+              />
+              <div className="text-2xl mt-5 mr-4 font-bold">Away Team</div>
+            </div>
+            <div>
+              <Image
+                src={`${homeBadgeId}/preview`}
+                width={250}
+                height={250}
+                alt={`${strHomeTeam}-logo`}
+              />
+              <div className="text-2xl mt-5 ml-4 font-bold">Home Team</div>
+            </div>
+          </div>
+          <div className="divider"></div>
+          <div className="text-3xl mr-5 font-bold">{ODDS_TYPE_LOOKUP[oddsType]}</div>
+          {oddsType === "totals" && <div className="text-lg mr-5 font-bold">{total}</div>}
+          <div className="card-actions mt-3 flex">
+            <div className="form-control mx-6">
+              <div className="label-text text-lg">
+                {oddsType === "totals" ? "Over" : strAwayTeam}
+              </div>
+              {oddsType === "pointspread" && awaySpread}
+              <label className="label cursor-pointer justify-center">
                 <input
+                  size={32}
                   type="checkbox"
-                  disabled={locked}
+                  disabled={status !== "NS" || parlayContext.state.parlays[0]?.locked}
                   onChange={() =>
-                    upsertPickMutation.mutate({
-                      matchupId: id,
-                      useLatestOdds: true,
-                      pick: oddsType === "totals" ? "over" : strAwayTeam,
-                    })
+                    handlePick(
+                      oddsType === "totals"
+                        ? `over|${overOdds}`
+                        : `${strAwayTeam}|${awayOdds}|${awayBadgeId}`
+                    )
                   }
-                  checked={locked}
-                  className="checkbox checkbox-primary"
+                  // onChange={() =>
+                  //   upsertPickMutation.mutate({
+                  //     matchupId: id,
+                  //     useLatestOdds: true,
+                  //     pick: oddsType === "totals" ? "over" : strAwayTeam,
+                  //   })
+                  // }
+                  checked={pick === (oddsType === "totals" ? "over" : strAwayTeam)}
+                  className="checkbox checkbox-primary checkbox-lg justify-center"
                 />
               </label>
-              <div className="label-text">
-                {oddsType === "totals" ? Odds[0].overOdds : Odds[0].awayOdds}
+              <div className="label-text text-xl">
+                {oddsType === "totals" ? formatOdds(overOdds!) : formatOdds(awayOdds!)}
               </div>
             </div>
-            <div className="form-control">
-              <div className="label-text">{oddsType === "totals" ? "Under" : strHomeTeam}</div>
-              {oddsType === "pointspread" && Odds[0].homeSpread}
-              <div className="flex items-center">
-                <label className="label cursor-pointer">
-                  <input
-                    type="checkbox"
-                    disabled={locked}
-                    onChange={() =>
-                      upsertPickMutation.mutate({
-                        matchupId: id,
-                        useLatestOdds: true,
-                        pick: oddsType === "totals" ? "under" : strHomeTeam,
-                      })
-                    }
-                    checked={false}
-                    className="checkbox checkbox-primary"
-                  />
-                </label>
+            <div className="form-control mx-6">
+              <div className="label-text text-lg">
+                {oddsType === "totals" ? "Under" : strHomeTeam}
               </div>
-              <div className="label-text">
-                {oddsType === "totals" ? Odds[0].underOdds : Odds[0].homeOdds}
+              {oddsType === "pointspread" && homeSpread}
+              <label className="label cursor-pointer justify-center">
+                <input
+                  size={32}
+                  type="checkbox"
+                  disabled={status !== "NS" || parlayContext.state.parlays[0]?.locked}
+                  onChange={() =>
+                    handlePick(
+                      oddsType === "totals"
+                        ? `under|${underOdds}`
+                        : `${strHomeTeam}|${homeOdds}|${homeBadgeId}`
+                    )
+                  }
+                  // onChange={() =>
+                  //   upsertPickMutation.mutate({
+                  //     matchupId: id,
+                  //     useLatestOdds: true,
+                  //     pick: oddsType === "totals" ? "under" : strHomeTeam,
+                  //   })
+                  // }
+                  checked={pick === (oddsType === "totals" ? "under" : strHomeTeam)}
+                  className="checkbox checkbox-primary checkbox-lg justify-center"
+                />
+              </label>
+              <div className="label-text text-xl">
+                {oddsType === "totals" ? formatOdds(underOdds!) : formatOdds(homeOdds!)}
               </div>
             </div>
           </div>
+          {parlayContext.state.parlays?.[0]?.locked && (
+            <div className="label-text">You have a locked pick</div>
+          )}
         </div>
       </div>
     </>

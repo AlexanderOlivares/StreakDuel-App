@@ -11,26 +11,21 @@ async function getParlays() {
 interface GetParlaysQuery {
   // TODO make interface
   parlays: any[];
-  message: string;
+  pickHistory: any[];
+  activePoints: number;
+  activePicks: any[];
+  locked: boolean;
 }
 
 function UserDataFetcher() {
   const parlayContext = useParlayContext();
-  const { data } = useQuery<GetParlaysQuery>(["getParlays"], getParlays);
-
-  console.log({
-    inDataFetcher: true,
-    data,
-  });
+  const { data } = useQuery<GetParlaysQuery>(["getParlays"], getParlays, { staleTime: 0 });
 
   // TODO improve this
   if (data && parlayContext.state.parlays !== data?.parlays) {
     parlayContext.dispatch({
       type: "fetchParlays",
-      payload: {
-        message: data.message,
-        parlays: data.parlays,
-      },
+      payload: data,
     });
   }
   return <></>;

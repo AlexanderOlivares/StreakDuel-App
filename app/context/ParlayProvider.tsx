@@ -2,13 +2,19 @@ import { createContext, useContext, useReducer } from "react";
 import type { ReactNode } from "react";
 
 export interface ParlayState {
-  message: string;
-  parlays: any[];
+  parlays: any[]; // high scores for broken streaks can be calculated form this
+  pickHistory: any[]; // previous picks that have outcomes, used to keep finished matchups checked in UI
+  activePicks: any[];
+  activePoints: number;
+  locked: boolean;
 }
 
 const defaultState: ParlayState = {
-  message: "",
   parlays: [],
+  pickHistory: [],
+  activePicks: [],
+  activePoints: 100,
+  locked: true,
 };
 
 export type ParlayAction = {
@@ -30,8 +36,16 @@ function parlayContextReducer(state: ParlayState, action: ParlayAction): ParlayS
   switch (type) {
     case "fetchParlays":
       return {
-        message: payload.message,
         parlays: payload.parlays,
+        pickHistory: payload.pickHistory,
+        activePoints: payload.activePoints,
+        activePicks: payload.activePicks,
+        locked: payload.locked,
+      };
+    case "addActivePick":
+      return {
+        ...state,
+        activePicks: payload.activePicks,
       };
     default:
       return state;
