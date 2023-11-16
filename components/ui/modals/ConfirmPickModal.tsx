@@ -9,7 +9,7 @@ interface ConfirmPickModalProps {
 }
 
 interface UpsertParlayProps {
-  parlays: any;
+  picks: any;
 }
 
 function upsertParlay(mutationProps: UpsertParlayProps) {
@@ -24,7 +24,7 @@ function ConfirmPickModal({ open, setConfirmPickModalOpen }: ConfirmPickModalPro
   const parlay = useMutation({
     mutationFn: (mutationProps: UpsertParlayProps) => upsertParlay(mutationProps),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["getMatchups"] });
+      queryClient.invalidateQueries(["getMatchups", "getParlays"]);
       setConfirmPickModalOpen(false);
     },
     onError: ({ error }) => {
@@ -33,7 +33,7 @@ function ConfirmPickModal({ open, setConfirmPickModalOpen }: ConfirmPickModalPro
   });
 
   function handleSubmit() {
-    parlay.mutate({ parlays: activePicks });
+    parlay.mutate({ picks: activePicks });
     console.log("HANDLE SUBMIT ???");
   }
 
@@ -45,6 +45,28 @@ function ConfirmPickModal({ open, setConfirmPickModalOpen }: ConfirmPickModalPro
       payload: {
         ...parlayContext.state,
         activePicks: [],
+      },
+    });
+  }
+
+  function handleRemovePick(matchupId: string) {
+    const picks = activePicks.filter(pick => pick.matchupId !== matchupId);
+    parlayContext.dispatch({
+      type: "addActivePick",
+      payload: {
+        ...parlayContext.state,
+        activePicks: picks,
+      },
+    });
+  }
+
+  function handleUseLatestOdds(useLatestOdds: boolean) {
+    const picks = activePicks.map(pick => ({ ...pick, useLatestOdds }));
+    parlayContext.dispatch({
+      type: "addActivePick",
+      payload: {
+        ...parlayContext.state,
+        activePicks: picks,
       },
     });
   }
@@ -62,9 +84,7 @@ function ConfirmPickModal({ open, setConfirmPickModalOpen }: ConfirmPickModalPro
               <thead>
                 <tr>
                   <th>
-                    <label>
-                      <input type="checkbox" className="checkbox" />
-                    </label>
+                    <label></label>
                   </th>
                   <th>Odds</th>
                   <th>Pick</th>
@@ -75,15 +95,29 @@ function ConfirmPickModal({ open, setConfirmPickModalOpen }: ConfirmPickModalPro
               <tbody>
                 {/* row 1 */}
                 {activePicks.map(pick => {
-                  console.log(pick);
-
                   return (
                     <>
                       <tr>
                         <th>
-                          <label>
-                            <input type="checkbox" className="checkbox" />
-                          </label>
+                          <button
+                            onClick={() => handleRemovePick(pick.matchupId)}
+                            className="btn-sm btn-circle btn-outline"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-6 w-6"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                          </button>
                         </th>
                         <td>{pick.pickOdds}</td>
                         <td>
@@ -107,7 +141,12 @@ function ConfirmPickModal({ open, setConfirmPickModalOpen }: ConfirmPickModalPro
                           </div>
                         </td>
                         <td>
-                          <input type="checkbox" className="toggle" checked={pick.useLatestOdds} />
+                          <input
+                            type="checkbox"
+                            className="toggle"
+                            checked={pick.useLatestOdds}
+                            onChange={() => handleUseLatestOdds(!pick.useLatestOdds)}
+                          />
                         </td>
                       </tr>
                     </>

@@ -123,6 +123,7 @@ export default function MatchupCard(props: MatchupWithOdds) {
             pick,
             badge,
             oddsType,
+            useLatestOdds: false, // TODO handle this
           },
         ],
       },

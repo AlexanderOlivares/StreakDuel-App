@@ -48,19 +48,12 @@ export async function GET() {
     const pickHistory = parlays.slice(sliceIndex).flatMap(parlay => parlay.picks) ?? [];
     const activePoints = parlays[0]?.pointsAwarded ?? 100;
     const locked = parlays[0]?.locked ?? true;
-    const activePicks = firstParlayIsActive ? parlays[0].picks ?? [] : [];
-
-    console.log({
-      // pickHistory,
-      // activePoints,
-      // locked,
-      // activePicks,
-    });
+    const activePicksFromDb = firstParlayIsActive ? parlays[0].picks ?? [] : [];
 
     const activeMatchups = await prisma.matchups.findMany({
       where: {
         id: {
-          in: activePicks.map(({ matchupId }) => matchupId),
+          in: activePicksFromDb.map(({ matchupId }) => matchupId),
         },
       },
       select: {
@@ -74,15 +67,31 @@ export async function GET() {
 
     console.log({ activeMatchups });
 
-    // TODO map active picks to format needed for context:
-    // {
-    //   matchupId: id,
-    //   oddsId,
-    //   pick,
-    //   pickOdds: Number(pickOdds), // get from Matchups
-    //   badge, // get from Matchups
-    //   oddsType,// get from Matchups
-    // },
+    const activePicks = activePicksFromDb.map(pick => {
+      const { matchupId, oddsId, odds, id, useLatestOdds } = pick;
+      const matchup = activeMatchups.find(({ strHomeTeam, strAwayTeam }) =>
+        [strHomeTeam, strAwayTeam].includes(pick.pick)
+      );
+      if (!matchup) {
+        throw new Error("Matchup not found");
+      }
+      const { strAwayTeam, awayBadgeId, homeBadgeId, oddsType } = matchup;
+      const pickIsAwayTeam = strAwayTeam === pick.pick;
+      // TODO handle draw odds here
+      const pickOdds = pickIsAwayTeam ? odds.awayOdds : odds.homeOdds;
+      const badge = pickIsAwayTeam ? awayBadgeId : homeBadgeId;
+
+      return {
+        pickId: id,
+        matchupId,
+        oddsId,
+        pick: pick.pick,
+        pickOdds,
+        badge,
+        oddsType,
+        useLatestOdds,
+      };
+    });
 
     return NextResponse.json(
       { parlays, pickHistory, activePoints, locked, activePicks },
@@ -95,7 +104,7 @@ export async function GET() {
 }
 
 const PostPickSchema = z.object({
-  parlays: z.array(z.any()),
+  picks: z.array(z.any()),
 });
 
 export async function POST(req: NextRequest) {
@@ -114,7 +123,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No session found" }, { status: 401 });
     }
 
-    // console.log({ session });
     const user = await prisma.user.findUnique({ where: { email: session?.user?.email ?? "" } });
 
     if (!user) {
@@ -157,63 +165,88 @@ export async function POST(req: NextRequest) {
           : DEFAULT_POINTS_WAGERED;
       console.log({ pointsWagered });
 
-      // const { id } = await prisma.parlay.create({
-      //   data: {
-      //     userId: user.id,
-      //     // TODO if coming off win, update pointsWagered here
-      //     pointsWagered,
-      //   },
-      // });
-      // parlayId = id;
+      const { id } = await prisma.parlay.create({
+        data: {
+          userId: user.id,
+          pointsWagered,
+        },
+      });
+      parlayId = id;
     }
 
-    const { parlays } = validation.data;
+    const { picks } = validation.data;
     console.log({
-      parlays,
+      parlays: picks,
       noParlayGamesStarted,
       latestParlay,
     });
 
-    // /**
-    //  * Still need to check for updates
-    //  * 1. changing pick to other team
-    //  * 2. updating the acceptance of latest odds
-    //  * 3. removing pick prior to parlay locking
-    //  */
+    const parlayMatchupsHaveStarted = await prisma.matchups.findMany({
+      where: {
+        id: { in: picks.map(({ matchupId }) => matchupId) },
+        OR: [{ locked: true }, { status: "FT" }],
+      },
+    });
 
-    // const matchup = await prisma.matchups.findUnique({
-    //   where: { id: matchupId },
-    //   include: { Odds: { orderBy: { createdAt: "desc" } } },
-    // });
+    if (parlayMatchupsHaveStarted.length) {
+      return NextResponse.json({ error: "At least 1 matchup has started" }, { status: 403 });
+    }
+    const updatedPicks = await prisma.$transaction(async tx => {
+      const updatedPicks = [];
 
-    // if (!matchup?.Odds?.length) {
-    //   return NextResponse.json({ error: "No odds found for matchup" }, { status: 500 });
-    // }
+      const existingDbPicks = latestParlay?.picks ?? [];
+      const activePicksIds = picks.map(({ id }) => id);
+      const pickIdsToDelete = existingDbPicks
+        .map(({ id }) => id)
+        .filter(id => !activePicksIds.includes(id));
 
-    // if (matchup.locked) {
-    //   return NextResponse.json(
-    //     { error: "Game has already started. Matchup is locked" },
-    //     { status: 403 }
-    //   );
-    // }
-    // const odds = matchup.Odds;
+      const deletedPicks = await tx.pick.deleteMany({
+        where: { id: { in: pickIdsToDelete } },
+      });
+      console.log(`Deleted ${deletedPicks.count} picks from parlayId ${parlayId}`);
 
-    // console.log(JSON.stringify(odds, null, 2));
+      for (const pick of picks) {
+        const { useLatestOdds, oddsId, matchupId, id } = pick;
+        // New pick. Also handle case were pick was deleted from active picks here
+        if (!id) {
+          const createdPick = await tx.pick.create({
+            data: {
+              userId: user.id,
+              parlayId,
+              useLatestOdds,
+              oddsId,
+              matchupId,
+              locked: false,
+              pick: pick.pick,
+            },
+          });
+          updatedPicks.push(createdPick);
+        } else {
+          const existingPick = existingDbPicks.find(pick => pick.id === id);
+          if (!existingPick) {
+            throw new Error("Existing pick not found");
+          }
 
-    // const selectedPick = await prisma.pick.create({
-    //   data: {
-    //     userId: user.id,
-    //     parlayId,
-    //     useLatestOdds,
-    //     oddsId: odds[0].id,
-    //     matchupId,
-    //     locked: false,
-    //     pick,
-    //   },
-    // });
+          const useLatestOddsWasUpdated = existingPick.useLatestOdds !== useLatestOdds;
+          const existingPickWasUpdated = existingPick.pick !== pick.pick;
 
-    return NextResponse.json({ success: true }, { status: 200 });
-    // return NextResponse.json({ selectedPick }, { status: 200 });
+          if (useLatestOddsWasUpdated || existingPickWasUpdated) {
+            const updatedPick = await tx.pick.update({
+              where: { id },
+              data: {
+                // these are the only 3 settings user should be able to change
+                ...(useLatestOddsWasUpdated ? { useLatestOdds } : undefined),
+                ...(useLatestOddsWasUpdated ? { oddsId } : undefined),
+                ...(existingPickWasUpdated ? { pick: pick.pick } : undefined),
+              },
+            });
+            updatedPicks.push(updatedPick);
+          }
+        }
+      }
+      return updatedPicks;
+    });
+    return NextResponse.json({ updatedPicks }, { status: 200 });
   } catch (error) {
     console.log(error);
     return NextResponse.json({ error }, { status: 500 });
