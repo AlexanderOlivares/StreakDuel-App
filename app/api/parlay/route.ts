@@ -44,8 +44,8 @@ export async function GET() {
     const firstParlayIsActive = firstParlay?.picks?.every(
       pick => pick?.result === "TBD" && pick?.locked === false
     );
-    const sliceIndex = firstParlayIsActive ? 1 : 0;
-    const pickHistory = parlays.slice(sliceIndex).flatMap(parlay => parlay.picks) ?? [];
+    // const sliceIndex = firstParlayIsActive ? 1 : 0;
+    const pickHistory = parlays.flatMap(parlay => parlay.picks) ?? [];
     const activePoints = parlays[0]?.pointsAwarded ?? 100;
     const locked = parlays[0]?.locked ?? true;
     const activePicksFromDb = firstParlayIsActive ? parlays[0].picks ?? [] : [];
@@ -151,7 +151,7 @@ export async function POST(req: NextRequest) {
     }
 
     const noParlayGamesStarted =
-      !!latestParlay && latestParlay?.picks.every(pick => pick.result === "TBD");
+      latestParlay?.picks?.length && latestParlay.picks.every(pick => pick.result === "TBD");
 
     // existing parlay but no games have started yet
     if (!latestParlay?.locked && noParlayGamesStarted) {
