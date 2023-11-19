@@ -24,7 +24,8 @@ function ConfirmPickModal({ open, setConfirmPickModalOpen }: ConfirmPickModalPro
   const parlay = useMutation({
     mutationFn: (mutationProps: UpsertParlayProps) => upsertParlay(mutationProps),
     onSuccess: () => {
-      queryClient.invalidateQueries(["getMatchups", "getParlays"]);
+      queryClient.invalidateQueries(["getParlays", "getMatchups"]);
+      queryClient.refetchQueries({ stale: true });
       setConfirmPickModalOpen(false);
     },
     onError: ({ error }) => {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { humanReadableDate } from "@/lib/dateTime.ts/dateFormatter";
 import Image from "next/image";
 import { ODDS_TYPE_LOOKUP } from "@/lib/textFormatting.ts/constants";
@@ -98,11 +98,15 @@ export default function MatchupCard(props: MatchupWithOdds) {
     id: oddsId,
   } = Odds[0];
   const parlayContext = useParlayContext();
-  const { activePicks } = parlayContext.state;
+  const { activePicks, pickHistory } = parlayContext.state;
   const [confirmPickModalOpen, setConfirmPickModalOpen] = useState<boolean>(false);
-  const [pick, setPick] = useState<any>(""); // TODO make interface
+  const [pick, setPick] = useState<string>(""); // TODO make interface
 
-  // TODO  set this in context
+  useEffect(() => {
+    const prePopulatedPick = pickHistory.find(pick => pick.matchupId === id);
+    prePopulatedPick ? setPick(prePopulatedPick.pick) : setPick("");
+  }, [id, pickHistory]);
+
   function handlePick(pickVerticalBarOdds: string) {
     // TODO make regex to verify the string pattern
     const [pick, pickOdds, badge] = pickVerticalBarOdds.split("|");
@@ -110,6 +114,7 @@ export default function MatchupCard(props: MatchupWithOdds) {
       pick,
       pickOdds,
     });
+    // TODO handle picking the same team or when trying to switch teams
     parlayContext.dispatch({
       type: "addActivePick",
       payload: {
@@ -198,13 +203,6 @@ export default function MatchupCard(props: MatchupWithOdds) {
                         : `${strAwayTeam}|${awayOdds}|${awayBadgeId}`
                     )
                   }
-                  // onChange={() =>
-                  //   upsertPickMutation.mutate({
-                  //     matchupId: id,
-                  //     useLatestOdds: true,
-                  //     pick: oddsType === "totals" ? "over" : strAwayTeam,
-                  //   })
-                  // }
                   checked={pick === (oddsType === "totals" ? "over" : strAwayTeam)}
                   className="checkbox checkbox-primary checkbox-lg justify-center"
                 />
@@ -230,13 +228,6 @@ export default function MatchupCard(props: MatchupWithOdds) {
                         : `${strHomeTeam}|${homeOdds}|${homeBadgeId}`
                     )
                   }
-                  // onChange={() =>
-                  //   upsertPickMutation.mutate({
-                  //     matchupId: id,
-                  //     useLatestOdds: true,
-                  //     pick: oddsType === "totals" ? "under" : strHomeTeam,
-                  //   })
-                  // }
                   checked={pick === (oddsType === "totals" ? "under" : strHomeTeam)}
                   className="checkbox checkbox-primary checkbox-lg justify-center"
                 />
