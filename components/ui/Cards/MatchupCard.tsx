@@ -98,39 +98,42 @@ export default function MatchupCard(props: MatchupWithOdds) {
     id: oddsId,
   } = Odds[0];
   const parlayContext = useParlayContext();
-  const { activePicks, pickHistory } = parlayContext.state;
+  const { activePicks, pickHistory, locked } = parlayContext.state;
   const [confirmPickModalOpen, setConfirmPickModalOpen] = useState<boolean>(false);
-  const [pick, setPick] = useState<string>(""); // TODO make interface
+  const [existingPick, setExistingPick] = useState<string>("");
 
   useEffect(() => {
-    const prePopulatedPick = pickHistory.find(pick => pick.matchupId === id);
-    prePopulatedPick ? setPick(prePopulatedPick.pick) : setPick("");
+    const existingPickFound = pickHistory.find(({ matchupId }) => matchupId === id);
+    existingPickFound ? setExistingPick(existingPickFound.pick) : setExistingPick("");
   }, [id, pickHistory]);
 
   function handlePick(pickVerticalBarOdds: string) {
     // TODO make regex to verify the string pattern
     const [pick, pickOdds, badge] = pickVerticalBarOdds.split("|");
-    console.log({
+
+    const newPick = {
+      matchupId: id,
+      oddsId,
+      pickOdds: Number(pickOdds),
       pick,
-      pickOdds,
-    });
-    // TODO handle picking the same team or when trying to switch teams
+      badge,
+      oddsType,
+      useLatestOdds: false, // TODO handle this
+    };
+
+    const isChangingPick = !!existingPick && existingPick !== pick;
+    // remove old pick if changing to other side
+    const updatedActivePicks = activePicks.filter(
+      ({ pick }) => !(isChangingPick && existingPick === pick)
+    );
+    // do nothing and open up modal to allow edits there
+    const pickedExistingPick = !isChangingPick && existingPick === pick;
+
     parlayContext.dispatch({
       type: "addActivePick",
       payload: {
         ...parlayContext.state,
-        activePicks: [
-          ...activePicks,
-          {
-            matchupId: id,
-            oddsId,
-            pickOdds: Number(pickOdds),
-            pick,
-            badge,
-            oddsType,
-            useLatestOdds: false, // TODO handle this
-          },
-        ],
+        activePicks: [...updatedActivePicks, ...(pickedExistingPick ? [] : [newPick])],
       },
     });
     setConfirmPickModalOpen(true);
@@ -195,7 +198,7 @@ export default function MatchupCard(props: MatchupWithOdds) {
                 <input
                   size={32}
                   type="checkbox"
-                  disabled={status !== "NS" || parlayContext.state.parlays[0]?.locked}
+                  disabled={status !== "NS" || locked}
                   onChange={() =>
                     handlePick(
                       oddsType === "totals"
@@ -203,7 +206,7 @@ export default function MatchupCard(props: MatchupWithOdds) {
                         : `${strAwayTeam}|${awayOdds}|${awayBadgeId}`
                     )
                   }
-                  checked={pick === (oddsType === "totals" ? "over" : strAwayTeam)}
+                  checked={existingPick === (oddsType === "totals" ? "over" : strAwayTeam)}
                   className="checkbox checkbox-primary checkbox-lg justify-center"
                 />
               </label>
@@ -220,7 +223,7 @@ export default function MatchupCard(props: MatchupWithOdds) {
                 <input
                   size={32}
                   type="checkbox"
-                  disabled={status !== "NS" || parlayContext.state.parlays[0]?.locked}
+                  disabled={status !== "NS" || locked}
                   onChange={() =>
                     handlePick(
                       oddsType === "totals"
@@ -228,7 +231,7 @@ export default function MatchupCard(props: MatchupWithOdds) {
                         : `${strHomeTeam}|${homeOdds}|${homeBadgeId}`
                     )
                   }
-                  checked={pick === (oddsType === "totals" ? "under" : strHomeTeam)}
+                  checked={existingPick === (oddsType === "totals" ? "under" : strHomeTeam)}
                   className="checkbox checkbox-primary checkbox-lg justify-center"
                 />
               </label>
@@ -237,9 +240,7 @@ export default function MatchupCard(props: MatchupWithOdds) {
               </div>
             </div>
           </div>
-          {parlayContext.state.parlays?.[0]?.locked && (
-            <div className="label-text">You have a locked pick</div>
-          )}
+          {locked && <div className="label-text">You have a locked pick</div>}
         </div>
       </div>
     </>
