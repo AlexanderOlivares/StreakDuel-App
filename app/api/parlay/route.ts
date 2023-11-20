@@ -67,6 +67,7 @@ export async function GET() {
 
     console.log({ activeMatchups });
 
+    // TODO do this transformation for pickHistory and then copy the picks from first parlay to activePicks
     const activePicks = activePicksFromDb.map(pick => {
       const { matchupId, oddsId, odds, id, useLatestOdds } = pick;
       const matchup = activeMatchups.find(({ strHomeTeam, strAwayTeam }) =>
@@ -94,7 +95,7 @@ export async function GET() {
     });
 
     return NextResponse.json(
-      { parlays, pickHistory, activePoints, locked, activePicks },
+      { parlays, pickHistory, activePoints, locked, activePicks, dbActivePicks: activePicks },
       { status: 200 }
     );
   } catch (error) {

@@ -14,6 +14,7 @@ interface GetParlaysQuery {
   pickHistory: any[];
   activePoints: number;
   activePicks: any[];
+  dbActivePicks: any[];
   locked: boolean;
 }
 

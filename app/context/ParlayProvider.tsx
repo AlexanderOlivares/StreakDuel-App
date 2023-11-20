@@ -5,6 +5,7 @@ export interface ParlayState {
   parlays: any[]; // high scores for broken streaks can be calculated form this
   pickHistory: any[]; // previous picks that have outcomes, used to keep finished matchups checked in UI
   activePicks: any[];
+  dbActivePicks: any[];
   activePoints: number;
   locked: boolean;
 }
@@ -39,6 +40,7 @@ function parlayContextReducer(state: ParlayState, action: ParlayAction): ParlayS
         parlays: payload.parlays,
         pickHistory: payload.pickHistory,
         activePoints: payload.activePoints,
+        dbActivePicks: payload.activePicks,
         activePicks: payload.activePicks,
         locked: payload.locked,
       };

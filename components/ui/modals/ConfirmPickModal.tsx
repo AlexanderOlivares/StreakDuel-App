@@ -19,7 +19,7 @@ function upsertParlay(mutationProps: UpsertParlayProps) {
 function ConfirmPickModal({ open, setConfirmPickModalOpen }: ConfirmPickModalProps) {
   const queryClient = useQueryClient();
   const parlayContext = useParlayContext();
-  const { activePicks } = parlayContext.state;
+  const { activePicks, dbActivePicks } = parlayContext.state;
 
   const parlay = useMutation({
     mutationFn: (mutationProps: UpsertParlayProps) => upsertParlay(mutationProps),
@@ -45,7 +45,7 @@ function ConfirmPickModal({ open, setConfirmPickModalOpen }: ConfirmPickModalPro
       type: "addActivePick",
       payload: {
         ...parlayContext.state,
-        activePicks: [],
+        activePicks: dbActivePicks,
       },
     });
   }
