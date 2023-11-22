@@ -40,15 +40,15 @@ export async function GET() {
     });
 
     // TODO tidy up and test this logic
-    const firstParlay = parlays[0] ?? [];
+    const firstParlay = parlays?.[0] ?? [];
     const firstParlayIsActive = firstParlay?.picks?.every(
       pick => pick?.result === "TBD" && pick?.locked === false
     );
     // const sliceIndex = firstParlayIsActive ? 1 : 0;
     const pickHistory = parlays.flatMap(parlay => parlay.picks) ?? [];
-    const activePoints = parlays[0]?.pointsAwarded ?? 100;
-    const locked = parlays[0]?.locked ?? true;
-    const activePicksFromDb = firstParlayIsActive ? parlays[0].picks ?? [] : [];
+    const activePoints = parlays?.[0]?.pointsAwarded ?? 100;
+    const locked = parlays?.[0]?.locked ?? true;
+    const activePicksFromDb = firstParlayIsActive ? parlays?.[0].picks ?? [] : [];
 
     const activeMatchups = await prisma.matchups.findMany({
       where: {
