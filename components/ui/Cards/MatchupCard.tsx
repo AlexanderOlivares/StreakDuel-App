@@ -123,9 +123,8 @@ export default function MatchupCard(props: MatchupWithOdds) {
 
     const isChangingPick = !!existingPick && existingPick !== pick;
     // remove old pick if changing to other side
-    const updatedActivePicks = activePicks.filter(
-      ({ pick }) => !(isChangingPick && existingPick === pick)
-    );
+    const updatedActivePicks =
+      activePicks?.filter(({ pick }) => !(isChangingPick && existingPick === pick)) ?? [];
     // do nothing and open up modal to allow edits there
     const pickedExistingPick = !isChangingPick && existingPick === pick;
 

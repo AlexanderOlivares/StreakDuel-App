@@ -147,15 +147,16 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    if (latestParlay?.locked) {
+    const latestParlayLocked = latestParlay?.locked;
+
+    if (latestParlayLocked) {
       return NextResponse.json({ error: "You have a locked pick" }, { status: 403 });
     }
 
-    const noParlayGamesStarted =
-      latestParlay?.picks?.length && latestParlay.picks.every(pick => pick.result === "TBD");
+    const noParlayGamesStarted = latestParlay?.picks.every(pick => pick.result === "TBD");
 
     // existing parlay but no games have started yet
-    if (!latestParlay?.locked && noParlayGamesStarted) {
+    if (latestParlay && !latestParlayLocked && noParlayGamesStarted) {
       parlayId = latestParlay.id;
     } else {
       // Coming off of a parlay win, loss, or user's first ever parlay
