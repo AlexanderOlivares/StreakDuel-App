@@ -189,8 +189,8 @@ export default function MatchupCard(props: MatchupWithOdds) {
           <div className="text-3xl mr-5 font-bold">{ODDS_TYPE_LOOKUP[oddsType]}</div>
           {oddsType === "totals" && <div className="text-lg mr-5 font-bold">{total}</div>}
           <div className="card-actions mt-3 flex">
-            <div className="form-control mx-6">
-              <div className="label-text text-lg">
+            <div className="form-control mx-2">
+              <div className="label-text text-md">
                 {oddsType === "totals" ? "Over" : strAwayTeam}
               </div>
               {oddsType === "pointspread" && awaySpread}
@@ -214,8 +214,8 @@ export default function MatchupCard(props: MatchupWithOdds) {
                 {oddsType === "totals" ? formatOdds(overOdds!) : formatOdds(awayOdds!)}
               </div>
             </div>
-            <div className="form-control mx-6">
-              <div className="label-text text-lg">
+            <div className="form-control mx-2">
+              <div className="label-text text-md">
                 {oddsType === "totals" ? "Under" : strHomeTeam}
               </div>
               {oddsType === "pointspread" && homeSpread}

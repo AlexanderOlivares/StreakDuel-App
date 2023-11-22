@@ -14,6 +14,7 @@ const defaultState: ParlayState = {
   parlays: [],
   pickHistory: [],
   activePicks: [],
+  dbActivePicks: [],
   activePoints: 100,
   locked: true,
 };

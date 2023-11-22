@@ -17,7 +17,7 @@ async function getMatchups() {
 
 interface GetMatchupsQuery {
   matchups: MatchupWithOdds[];
-  weekDates: DayToDateDict;
+  displayDates: DayToDateDict;
 }
 
 export default function MatchupBoard() {
@@ -28,7 +28,7 @@ export default function MatchupBoard() {
 
   if (isLoading) return <Loading />;
 
-  if (!data?.matchups || !data?.weekDates || error) {
+  if (!data?.matchups || !data?.displayDates || error) {
     return <ComponentError />;
   }
 
@@ -39,8 +39,8 @@ export default function MatchupBoard() {
       <h1 className="text-3xl md:text-5xl mb-4 font-extrabold" id="home">
         Matchups
       </h1>
-      <div className="tabs tabs-boxed">
-        {Object.entries(data.weekDates).map(([day, dateString]) => {
+      <div className="tabs tabs-boxed flex justify-center">
+        {Object.entries(data.displayDates).map(([day, dateString]) => {
           return (
             <a
               key={day}

@@ -87,3 +87,11 @@ export function dayRangeLaTimezone(date: string) {
     lt: endOfDay.toISOString(),
   };
 }
+
+// TODO write tests
+export function getYesterdayTodayTomorrow(timeZone: string) {
+  const today = moment.tz(timeZone);
+  const yesterday = today.clone().subtract(1, "day");
+  const tomorrow = today.clone().add(1, "day");
+  return [yesterday, today, tomorrow].map(day => day.format("dddd"));
+}
