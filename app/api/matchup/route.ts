@@ -13,6 +13,7 @@ export async function GET() {
     const now = moment().format("YYYYMMDD");
     const weekDates = getCurrentWeekDates(now);
     const today = dayRangeLaTimezone(now);
+    const yesterday = dayRangeLaTimezone(moment(now).subtract(1, "days").format("YYYYMMDD"));
     const nextDay = dayRangeLaTimezone(moment(now).add(1, "days").format("YYYYMMDD"));
     const yesterdayTodayTomorrow = getYesterdayTodayTomorrow("America/Los_Angeles");
     const displayDates: Record<string, string> = {};
@@ -25,7 +26,7 @@ export async function GET() {
 
     const matchups: MatchupWithOdds[] = await prisma.matchups.findMany({
       where: {
-        OR: [today, nextDay].map(dateRange => ({ strTimestamp: dateRange })),
+        OR: [yesterday, today, nextDay].map(dateRange => ({ strTimestamp: dateRange })),
         used: true,
       },
       include: { Odds: true },
