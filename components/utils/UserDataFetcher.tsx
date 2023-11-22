@@ -8,6 +8,7 @@ async function getParlays() {
   return response.data;
 }
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 interface GetParlaysQuery {
   // TODO make interface
   parlays: any[];
@@ -17,6 +18,7 @@ interface GetParlaysQuery {
   dbActivePicks: any[];
   locked: boolean;
 }
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 function UserDataFetcher() {
   const parlayContext = useParlayContext();

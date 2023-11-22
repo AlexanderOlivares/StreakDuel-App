@@ -1,6 +1,7 @@
 import { createContext, useContext, useReducer } from "react";
 import type { ReactNode } from "react";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export interface ParlayState {
   parlays: any[]; // high scores for broken streaks can be calculated form this
   pickHistory: any[]; // previous picks that have outcomes, used to keep finished matchups checked in UI
@@ -9,6 +10,7 @@ export interface ParlayState {
   activePoints: number;
   locked: boolean;
 }
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 const defaultState: ParlayState = {
   parlays: [],

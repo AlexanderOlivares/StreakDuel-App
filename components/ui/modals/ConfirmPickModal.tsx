@@ -9,6 +9,7 @@ interface ConfirmPickModalProps {
 }
 
 interface UpsertParlayProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   picks: any;
 }
 

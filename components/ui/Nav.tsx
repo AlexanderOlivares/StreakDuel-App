@@ -2,11 +2,11 @@ import React from "react";
 import { signIn, signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
-import { useParlayContext } from "@/app/context/ParlayProvider";
+// import { useParlayContext } from "@/app/context/ParlayProvider";
 
 export default function Nav() {
   const { data: session, status } = useSession();
-  const { state: parlayState } = useParlayContext();
+  // const { state: parlayState } = useParlayContext();
   console.log({
     session,
     status,
