@@ -103,7 +103,7 @@ export default function MatchupCard(props: MatchupWithOdds) {
   const [existingPick, setExistingPick] = useState<string>("");
 
   useEffect(() => {
-    const existingPickFound = pickHistory.find(({ matchupId }) => matchupId === id);
+    const existingPickFound = pickHistory?.find(({ matchupId }) => matchupId === id);
     existingPickFound ? setExistingPick(existingPickFound.pick) : setExistingPick("");
   }, [id, pickHistory]);
 
