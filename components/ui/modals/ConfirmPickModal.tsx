@@ -77,8 +77,8 @@ function ConfirmPickModal({ open, setConfirmPickModalOpen }: ConfirmPickModalPro
     <>
       <dialog id="confirm-pick-modal" className="modal" open={open}>
         <div className="modal-box">
-          <h3 className="font-bold text-lg">{activePicks[0]?.pick}</h3>
-          <h3 className="font-bold text-lg">{activePicks[0]?.pickOdds}</h3>
+          <h3 className="font-bold text-lg">{activePicks?.[0]?.pick}</h3>
+          <h3 className="font-bold text-lg">{activePicks?.[0]?.pickOdds}</h3>
           <p className="py-4">Press ESC key or click outside to close</p>
           <div className="overflow-x-auto">
             <table className="table">
