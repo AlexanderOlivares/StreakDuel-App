@@ -2,8 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import {
   dayRangeLaTimezone,
-  getCurrentWeekDates,
-  getYesterdayTodayTomorrow,
+  getYesterdayTodayTomorrowDisplayDates,
 } from "@/lib/dateTime.ts/dateFormatter";
 import moment from "moment";
 import { MatchupWithOdds } from "@/components/ui/Cards/MatchupCard";
@@ -11,18 +10,10 @@ import { MatchupWithOdds } from "@/components/ui/Cards/MatchupCard";
 export async function GET() {
   try {
     const now = moment().format("YYYYMMDD");
-    const weekDates = getCurrentWeekDates(now);
     const today = dayRangeLaTimezone(now);
     const yesterday = dayRangeLaTimezone(moment(now).subtract(1, "days").format("YYYYMMDD"));
     const nextDay = dayRangeLaTimezone(moment(now).add(1, "days").format("YYYYMMDD"));
-    const yesterdayTodayTomorrow = getYesterdayTodayTomorrow("America/Los_Angeles");
-    const displayDates: Record<string, string> = {};
-
-    Object.entries(weekDates).forEach(([day, date]) => {
-      if (yesterdayTodayTomorrow.includes(day)) {
-        displayDates[day] = date;
-      }
-    });
+    const displayDates = getYesterdayTodayTomorrowDisplayDates("America/Los_Angeles");
 
     const matchups: MatchupWithOdds[] = await prisma.matchups.findMany({
       where: {

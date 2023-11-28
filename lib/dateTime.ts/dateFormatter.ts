@@ -89,9 +89,16 @@ export function dayRangeLaTimezone(date: string) {
 }
 
 // TODO write tests
-export function getYesterdayTodayTomorrow(timeZone: string) {
-  const today = moment.tz(timeZone);
+export function getYesterdayTodayTomorrowDisplayDates(timeZone: string) {
+  const today = moment.tz(timeZone).startOf("day");
   const yesterday = today.clone().subtract(1, "day");
   const tomorrow = today.clone().add(1, "day");
-  return [yesterday, today, tomorrow].map(day => day.format("dddd"));
+
+  const displayDates: Record<string, string> = {};
+  for (const day of [yesterday, today, tomorrow]) {
+    const displayDay = day.format("dddd");
+    const date = day.startOf("day").format("YYYYMMDD");
+    displayDates[displayDay] = date;
+  }
+  return displayDates;
 }
