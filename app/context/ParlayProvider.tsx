@@ -18,7 +18,7 @@ const defaultState: ParlayState = {
   activePicks: [],
   dbActivePicks: [],
   activePoints: 100,
-  locked: true,
+  locked: false,
 };
 
 export type ParlayAction = {

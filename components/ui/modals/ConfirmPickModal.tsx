@@ -63,6 +63,7 @@ function ConfirmPickModal({ open, setConfirmPickModalOpen }: ConfirmPickModalPro
   }
 
   function handleUseLatestOdds(useLatestOdds: boolean) {
+    // TODO match the specific game by an id
     const picks = activePicks.map(pick => ({ ...pick, useLatestOdds }));
     parlayContext.dispatch({
       type: "addActivePick",
@@ -73,6 +74,7 @@ function ConfirmPickModal({ open, setConfirmPickModalOpen }: ConfirmPickModalPro
     });
   }
 
+  // TODO calculate the parlay odds and show potential points to award
   return (
     <>
       <dialog id="confirm-pick-modal" className="modal" open={open}>
@@ -99,60 +101,58 @@ function ConfirmPickModal({ open, setConfirmPickModalOpen }: ConfirmPickModalPro
                 {activePicks &&
                   activePicks.map(pick => {
                     return (
-                      <>
-                        <tr>
-                          <th>
-                            <button
-                              onClick={() => handleRemovePick(pick.matchupId)}
-                              className="btn-sm btn-circle btn-outline"
+                      <tr key={pick.pickId}>
+                        <th>
+                          <button
+                            onClick={() => handleRemovePick(pick.matchupId)}
+                            className="btn-sm btn-circle btn-outline"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-6 w-6"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
                             >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-6 w-6"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth="2"
-                                  d="M6 18L18 6M6 6l12 12"
-                                />
-                              </svg>
-                            </button>
-                          </th>
-                          <td>{pick.pickOdds}</td>
-                          <td>
-                            <div className="flex items-center space-x-3">
-                              {pick.badge && (
-                                <div className="avatar">
-                                  <div className="mask mask-squircle w-12 h-12">
-                                    <Image
-                                      width={50}
-                                      height={50}
-                                      src={`${pick.badge}/tiny`}
-                                      alt="Pick badge"
-                                    />
-                                  </div>
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                          </button>
+                        </th>
+                        <td>{pick.pickOdds}</td>
+                        <td>
+                          <div className="flex items-center space-x-3">
+                            {pick.badge && (
+                              <div className="avatar">
+                                <div className="mask mask-squircle w-12 h-12">
+                                  <Image
+                                    width={50}
+                                    height={50}
+                                    src={`${pick.badge}/tiny`}
+                                    alt="Pick badge"
+                                  />
                                 </div>
-                              )}
-                              <div>
-                                <div className="font-bold">{pick.pick}</div>
-                                <div className="text-sm opacity-50">{pick.oddsType}</div>
                               </div>
+                            )}
+                            <div>
+                              <div className="font-bold">{pick.pick}</div>
+                              <div className="text-sm opacity-50">{pick.oddsType}</div>
                             </div>
-                          </td>
-                          <td>
-                            <input
-                              type="checkbox"
-                              className="toggle"
-                              checked={pick.useLatestOdds}
-                              onChange={() => handleUseLatestOdds(!pick.useLatestOdds)}
-                            />
-                          </td>
-                        </tr>
-                      </>
+                          </div>
+                        </td>
+                        <td>
+                          <input
+                            type="checkbox"
+                            className="toggle"
+                            checked={pick.useLatestOdds}
+                            onChange={() => handleUseLatestOdds(!pick.useLatestOdds)}
+                          />
+                        </td>
+                      </tr>
                     );
                   })}
               </tbody>

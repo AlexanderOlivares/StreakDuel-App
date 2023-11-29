@@ -39,16 +39,39 @@ export async function GET() {
       },
     });
 
+    let createdParlay;
+    if (!parlays.length) {
+      // TODO update default points when handling forfeits
+      const DEFAULT_POINTS_WAGERED = 100;
+      createdParlay = await prisma.parlay.create({
+        data: {
+          userId: user.id,
+          pointsWagered: DEFAULT_POINTS_WAGERED,
+        },
+      });
+    }
+
     // TODO tidy up and test this logic
-    const firstParlay = parlays?.[0] ?? [];
-    const firstParlayIsActive = firstParlay?.picks?.every(
-      pick => pick?.result === "TBD" && pick?.locked === false
-    );
-    // const sliceIndex = firstParlayIsActive ? 1 : 0;
+    const existingParlay = parlays?.[0] ?? [];
     const pickHistory = parlays.flatMap(parlay => parlay.picks) ?? [];
-    const activePoints = parlays?.[0]?.pointsAwarded ?? 100;
-    const locked = parlays?.[0]?.locked ?? true;
-    const activePicksFromDb = firstParlayIsActive ? parlays?.[0].picks ?? [] : [];
+
+    if (!parlays.length && !createdParlay) {
+      throw new Error("No parlay found");
+    }
+
+    const locked = createdParlay ? false : existingParlay?.locked;
+    const activePicksFromDb = existingParlay?.picks ?? [];
+    const parlayIsOver =
+      !locked &&
+      activePicksFromDb.length > 0 &&
+      activePicksFromDb.every(pick => ["win", "loss", "push"].includes(pick.result));
+
+    let activePoints;
+    if (createdParlay) {
+      activePoints = createdParlay?.pointsWagered;
+    } else {
+      activePoints = parlayIsOver ? existingParlay.pointsAwarded : existingParlay.pointsWagered;
+    }
 
     const activeMatchups = await prisma.matchups.findMany({
       where: {
@@ -68,31 +91,37 @@ export async function GET() {
     console.log({ activeMatchups });
 
     // TODO do this transformation for pickHistory and then copy the picks from first parlay to activePicks
-    const activePicks = activePicksFromDb.map(pick => {
-      const { matchupId, oddsId, odds, id, useLatestOdds } = pick;
-      const matchup = activeMatchups.find(({ strHomeTeam, strAwayTeam }) =>
-        [strHomeTeam, strAwayTeam].includes(pick.pick)
-      );
-      if (!matchup) {
-        throw new Error("Matchup not found");
-      }
-      const { strAwayTeam, awayBadgeId, homeBadgeId, oddsType } = matchup;
-      const pickIsAwayTeam = strAwayTeam === pick.pick;
-      // TODO handle draw odds here
-      const pickOdds = pickIsAwayTeam ? odds.awayOdds : odds.homeOdds;
-      const badge = pickIsAwayTeam ? awayBadgeId : homeBadgeId;
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    let activePicks: any[];
+    if (createdParlay || parlayIsOver) {
+      activePicks = [];
+    } else {
+      activePicks = activePicksFromDb.map(pick => {
+        const { matchupId, oddsId, odds, id, useLatestOdds } = pick;
+        const matchup = activeMatchups.find(({ strHomeTeam, strAwayTeam }) =>
+          [strHomeTeam, strAwayTeam].includes(pick.pick)
+        );
+        if (!matchup) {
+          throw new Error("Matchup not found");
+        }
+        const { strAwayTeam, awayBadgeId, homeBadgeId, oddsType } = matchup;
+        const pickIsAwayTeam = strAwayTeam === pick.pick;
+        // TODO handle draw odds here
+        const pickOdds = pickIsAwayTeam ? odds.awayOdds : odds.homeOdds;
+        const badge = pickIsAwayTeam ? awayBadgeId : homeBadgeId;
 
-      return {
-        pickId: id,
-        matchupId,
-        oddsId,
-        pick: pick.pick,
-        pickOdds,
-        badge,
-        oddsType,
-        useLatestOdds,
-      };
-    });
+        return {
+          pickId: id,
+          matchupId,
+          oddsId,
+          pick: pick.pick,
+          pickOdds,
+          badge,
+          oddsType,
+          useLatestOdds,
+        };
+      });
+    }
 
     return NextResponse.json(
       { parlays, pickHistory, activePoints, locked, activePicks, dbActivePicks: activePicks },
@@ -240,6 +269,7 @@ export async function POST(req: NextRequest) {
                 ...(useLatestOddsWasUpdated ? { useLatestOdds } : undefined),
                 ...(useLatestOddsWasUpdated ? { oddsId } : undefined),
                 ...(existingPickWasUpdated ? { pick: pick.pick } : undefined),
+                // TODO add the userUpdatedAt timestamp here
               },
             });
             updatedPicks.push(updatedPick);
