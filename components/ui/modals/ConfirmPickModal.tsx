@@ -62,9 +62,11 @@ function ConfirmPickModal({ open, setConfirmPickModalOpen }: ConfirmPickModalPro
     });
   }
 
-  function handleUseLatestOdds(useLatestOdds: boolean) {
-    // TODO match the specific game by an id
-    const picks = activePicks.map(pick => ({ ...pick, useLatestOdds }));
+  function handleUseLatestOdds(useLatestOdds: boolean, pickId: string) {
+    const picks = activePicks.map(pick => ({
+      ...pick,
+      ...(pickId === pick.pickId ? { useLatestOdds } : {}),
+    }));
     parlayContext.dispatch({
       type: "addActivePick",
       payload: {
@@ -147,9 +149,9 @@ function ConfirmPickModal({ open, setConfirmPickModalOpen }: ConfirmPickModalPro
                         <td>
                           <input
                             type="checkbox"
-                            className="toggle"
+                            className={`toggle ${pick.useLatestOdds ? "toggle-success" : ""}`}
                             checked={pick.useLatestOdds}
-                            onChange={() => handleUseLatestOdds(!pick.useLatestOdds)}
+                            onChange={() => handleUseLatestOdds(!pick.useLatestOdds, pick.pickId)}
                           />
                         </td>
                       </tr>
