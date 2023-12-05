@@ -20,7 +20,7 @@ export async function GET() {
         OR: [yesterday, today, nextDay].map(dateRange => ({ strTimestamp: dateRange })),
         used: true,
       },
-      include: { Odds: true },
+      include: { odds: true },
       orderBy: [
         {
           strTimestamp: "asc",

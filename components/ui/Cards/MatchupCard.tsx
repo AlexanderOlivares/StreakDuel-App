@@ -64,7 +64,7 @@ export interface Odds {
 }
 
 export interface MatchupWithOdds extends Matchup {
-  Odds: Odds[];
+  odds: Odds[];
 }
 
 export default function MatchupCard(props: MatchupWithOdds) {
@@ -85,7 +85,7 @@ export default function MatchupCard(props: MatchupWithOdds) {
     oddsType,
     status,
     // locked,
-    Odds,
+    odds,
   } = props;
   const {
     awayOdds,
@@ -96,7 +96,7 @@ export default function MatchupCard(props: MatchupWithOdds) {
     awaySpread,
     homeSpread,
     id: oddsId,
-  } = Odds[0];
+  } = odds[0];
   const parlayContext = useParlayContext();
   const { activePicks, pickHistory, locked } = parlayContext.state;
   const [confirmPickModalOpen, setConfirmPickModalOpen] = useState<boolean>(false);
