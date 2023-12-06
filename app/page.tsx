@@ -8,7 +8,7 @@ import { DayToDateDict, isSameDay } from "@/lib/dateTime.ts/dateFormatter";
 import ComponentError from "@/components/utils/ComponentError";
 import axios from "axios";
 import MatchupCard, { MatchupWithOdds } from "@/components/ui/Cards/MatchupCard";
-import { useParlayContext } from "./context/ParlayProvider";
+import { useParlayContext } from "../context/ParlayProvider";
 
 async function getMatchups() {
   const response = await axios.get("/api/matchup");

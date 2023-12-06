@@ -1,4 +1,4 @@
-import { useParlayContext } from "@/app/context/ParlayProvider";
+import { useParlayContext } from "@/context/ParlayProvider";
 import React from "react";
 
 export default function PromoBar() {

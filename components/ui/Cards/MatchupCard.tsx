@@ -5,7 +5,7 @@ import { humanReadableDate } from "@/lib/dateTime.ts/dateFormatter";
 import Image from "next/image";
 import { ODDS_TYPE_LOOKUP } from "@/lib/textFormatting.ts/constants";
 import ConfirmPickModal from "../modals/ConfirmPickModal";
-import { useParlayContext } from "@/app/context/ParlayProvider";
+import { useParlayContext } from "@/context/ParlayProvider";
 
 export type OddsType = "money-line" | "totals" | "pointspread";
 export type OddsScope =

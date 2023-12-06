@@ -1,7 +1,7 @@
 import React from "react";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
-import { useParlayContext } from "@/app/context/ParlayProvider";
+import { useParlayContext } from "@/context/ParlayProvider";
 
 async function getParlays() {
   const response = await axios.get("/api/parlay");

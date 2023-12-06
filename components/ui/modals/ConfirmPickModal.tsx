@@ -1,4 +1,4 @@
-import { useParlayContext } from "@/app/context/ParlayProvider";
+import { useParlayContext } from "@/context/ParlayProvider";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import Image from "next/image";
