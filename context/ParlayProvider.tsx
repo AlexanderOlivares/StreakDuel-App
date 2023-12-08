@@ -1,16 +1,15 @@
+import { IPick, ParlayWithPicksAndOdds } from "@/lib/types/interfaces";
 import { createContext, useContext, useReducer } from "react";
 import type { ReactNode } from "react";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 export interface ParlayState {
-  parlays: any[]; // high scores for broken streaks can be calculated form this
-  pickHistory: any[]; // previous picks that have outcomes, used to keep finished matchups checked in UI
-  activePicks: any[];
-  dbActivePicks: any[];
+  parlays: ParlayWithPicksAndOdds[]; // high scores for broken streaks can be calculated form this
+  pickHistory: IPick[]; // previous picks that have outcomes, used to keep finished matchups checked in UI
+  activePicks: IPick[];
+  dbActivePicks: IPick[];
   activePoints: number;
   locked: boolean;
 }
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 const defaultState: ParlayState = {
   parlays: [],

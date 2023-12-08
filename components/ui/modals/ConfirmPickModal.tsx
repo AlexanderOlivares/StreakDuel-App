@@ -62,7 +62,7 @@ function ConfirmPickModal({ open, setConfirmPickModalOpen }: ConfirmPickModalPro
     });
   }
 
-  function handleUseLatestOdds(useLatestOdds: boolean, pickId: string) {
+  function handleUseLatestOdds(useLatestOdds: boolean, pickId?: string) {
     const picks = activePicks.map(pick => ({
       ...pick,
       ...(pickId === pick.pickId ? { useLatestOdds } : {}),

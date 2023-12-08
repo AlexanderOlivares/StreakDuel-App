@@ -6,6 +6,7 @@ import Image from "next/image";
 import { ODDS_TYPE_LOOKUP } from "@/lib/textFormatting.ts/constants";
 import ConfirmPickModal from "../modals/ConfirmPickModal";
 import { useParlayContext } from "@/context/ParlayProvider";
+import { MatchupWithOdds } from "@/lib/types/interfaces";
 
 export type OddsType = "money-line" | "totals" | "pointspread";
 export type OddsScope =
@@ -17,74 +18,17 @@ export type OddsScope =
   | "3rd-quarter"
   | "4th-quarter";
 
-export interface Matchup {
-  id: string;
-  idEvent: string;
-  idHomeTeam: string;
-  idAwayTeam: string;
-  idLeague: string;
-  strLeague: string;
-  strEvent: string;
-  strHomeTeam: string;
-  strAwayTeam: string;
-  strTimestamp: string;
-  strThumb: string;
-  awayBadgeId: string;
-  homeBadgeId: string;
-  drawEligible: boolean;
-  oddsType: string;
-  oddsScope: string;
-  drawTeam?: string | null;
-  adminSelected: boolean;
-  used: boolean;
-  awayScore: number | null;
-  homeScore: number | null;
-  pointsTotal: number | null;
-  status: string;
-  locked: boolean;
-  adminUnlocked: boolean;
-  adminCorrected: boolean;
-}
-
-export interface Odds {
-  [key: string]: number | null | undefined | string | Date;
-  id: string;
-  matchupId: string;
-  oddsGameId: number;
-  sportsbook: string;
-  homeOdds?: number | null;
-  awayOdds?: number | null;
-  drawOdds?: number | null;
-  overOdds?: number | null;
-  underOdds?: number | null;
-  homeSpread?: number | null;
-  awaySpread?: number | null;
-  total?: number | null;
-  createdAt?: Date;
-}
-
-export interface MatchupWithOdds extends Matchup {
-  odds: Odds[];
-}
-
 export default function MatchupCard(props: MatchupWithOdds) {
   const {
     strLeague,
-    // strEvent,
-    // strThumb,
     awayBadgeId,
     homeBadgeId,
     strTimestamp,
     strHomeTeam,
     strAwayTeam,
-    // drawEligible,
     id,
-    // idHomeTeam,
-    // idAwayTeam,
-    // drawTeam,
     oddsType,
     status,
-    // locked,
     odds,
   } = props;
   const {

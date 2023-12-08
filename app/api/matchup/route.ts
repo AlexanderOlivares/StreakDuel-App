@@ -5,7 +5,7 @@ import {
   getYesterdayTodayTomorrowDisplayDates,
 } from "@/lib/dateTime.ts/dateFormatter";
 import moment from "moment";
-import { MatchupWithOdds } from "@/components/ui/Cards/MatchupCard";
+import { MatchupWithOdds } from "@/lib/types/interfaces";
 
 export async function GET() {
   try {

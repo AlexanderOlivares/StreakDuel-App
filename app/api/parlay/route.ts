@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { options } from "../auth/[...nextauth]/options";
+import { Matchup, IPick, ParlayWithPicksAndOdds, ParlayWithPicks } from "@/lib/types/interfaces";
 
 export async function GET() {
   try {
@@ -20,9 +21,10 @@ export async function GET() {
       return NextResponse.json({ message: "No user found", parlays: [] }, { status: 500 });
     }
 
-    const parlays = await prisma.parlay.findMany({
+    const parlays: ParlayWithPicksAndOdds[] = await prisma.parlay.findMany({
       where: {
         userId: user.id,
+        // TODO add time based filters to only get parlays from current weekly round
       },
       orderBy: {
         createdAt: "desc",
@@ -53,7 +55,7 @@ export async function GET() {
 
     // TODO tidy up and test this logic
     const existingParlay = parlays?.[0] ?? [];
-    const pickHistory = parlays.flatMap(parlay => parlay.picks) ?? [];
+    const allParlayPicks = parlays.map(parlay => parlay.picks) ?? [];
 
     if (!parlays.length && !createdParlay) {
       throw new Error("No parlay found");
@@ -88,43 +90,51 @@ export async function GET() {
       },
     });
 
-    console.log({ activeMatchups });
-
     // TODO do this transformation for pickHistory and then copy the picks from first parlay to activePicks
-    /* eslint-disable @typescript-eslint/no-explicit-any */
-    let activePicks: any[];
+    let activePicks: IPick[] = [];
+    let pickHistory: IPick[][] = [];
     if (createdParlay || parlayIsOver) {
       activePicks = [];
     } else {
-      activePicks = activePicksFromDb.map(pick => {
-        const { matchupId, oddsId, odds, id, useLatestOdds } = pick;
-        const matchup = activeMatchups.find(({ strHomeTeam, strAwayTeam }) =>
-          [strHomeTeam, strAwayTeam].includes(pick.pick)
-        );
-        if (!matchup) {
-          throw new Error("Matchup not found");
-        }
-        const { strAwayTeam, awayBadgeId, homeBadgeId, oddsType } = matchup;
-        const pickIsAwayTeam = strAwayTeam === pick.pick;
-        // TODO handle draw odds here
-        const pickOdds = pickIsAwayTeam ? odds.awayOdds : odds.homeOdds;
-        const badge = pickIsAwayTeam ? awayBadgeId : homeBadgeId;
+      pickHistory = allParlayPicks.map(parlay => {
+        return parlay.map(pick => {
+          const { matchupId, oddsId, odds, id, useLatestOdds } = pick;
+          const matchup = activeMatchups.find(({ strHomeTeam, strAwayTeam }) =>
+            [strHomeTeam, strAwayTeam].includes(pick.pick)
+          );
+          if (!matchup) {
+            throw new Error("Matchup not found");
+          }
+          const { strAwayTeam, awayBadgeId, homeBadgeId, oddsType } = matchup;
+          const pickIsAwayTeam = strAwayTeam === pick.pick;
+          // TODO handle draw odds here
+          const pickOdds = pickIsAwayTeam ? odds.awayOdds! : odds.homeOdds!;
+          const badge = pickIsAwayTeam ? awayBadgeId : homeBadgeId;
 
-        return {
-          pickId: id,
-          matchupId,
-          oddsId,
-          pick: pick.pick,
-          pickOdds,
-          badge,
-          oddsType,
-          useLatestOdds,
-        };
+          return {
+            pickId: id,
+            matchupId,
+            oddsId,
+            pick: pick.pick,
+            pickOdds,
+            badge,
+            oddsType,
+            useLatestOdds,
+          };
+        });
       });
+      activePicks = pickHistory[0];
     }
 
     return NextResponse.json(
-      { parlays, pickHistory, activePoints, locked, activePicks, dbActivePicks: activePicks },
+      {
+        parlays,
+        pickHistory: pickHistory.flat(),
+        activePoints,
+        locked,
+        activePicks,
+        dbActivePicks: activePicks,
+      },
       { status: 200 }
     );
   } catch (error) {
@@ -160,7 +170,7 @@ export async function POST(req: NextRequest) {
     }
 
     let parlayId: string;
-    const latestParlay = await prisma.parlay.findFirst({
+    const latestParlay: ParlayWithPicks | null = await prisma.parlay.findFirst({
       where: {
         userId: user.id,
       },
@@ -212,7 +222,7 @@ export async function POST(req: NextRequest) {
       latestParlay,
     });
 
-    const parlayMatchupsHaveStarted = await prisma.matchups.findMany({
+    const parlayMatchupsHaveStarted: Matchup[] = await prisma.matchups.findMany({
       where: {
         id: { in: picks.map(({ matchupId }) => matchupId) },
         OR: [{ locked: true }, { status: "FT" }],

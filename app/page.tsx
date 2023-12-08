@@ -7,8 +7,9 @@ import Loading from "@/components/utils/Loading";
 import { DayToDateDict, isSameDay } from "@/lib/dateTime.ts/dateFormatter";
 import ComponentError from "@/components/utils/ComponentError";
 import axios from "axios";
-import MatchupCard, { MatchupWithOdds } from "@/components/ui/Cards/MatchupCard";
+import MatchupCard from "@/components/ui/Cards/MatchupCard";
 import { useParlayContext } from "../context/ParlayProvider";
+import { MatchupWithOdds } from "@/lib/types/interfaces";
 
 async function getMatchups() {
   const response = await axios.get("/api/matchup");
