@@ -198,13 +198,12 @@ export async function POST(req: NextRequest) {
     if (latestParlay && !latestParlayLocked && noParlayGamesStarted) {
       parlayId = latestParlay.id;
     } else {
-      // Coming off of a parlay win, loss, or user's first ever parlay
+      // Coming off of a completed parlay
       const DEFAULT_POINTS_WAGERED = 100;
       const pointsWagered =
         latestParlay && latestParlay.pointsAwarded > 100
           ? latestParlay.pointsAwarded
           : DEFAULT_POINTS_WAGERED;
-      console.log({ pointsWagered });
 
       const { id } = await prisma.parlay.create({
         data: {
@@ -215,12 +214,7 @@ export async function POST(req: NextRequest) {
       parlayId = id;
     }
 
-    const { picks } = validation.data;
-    console.log({
-      parlays: picks,
-      noParlayGamesStarted,
-      latestParlay,
-    });
+    const { picks }: { picks: IPick[] } = validation.data;
 
     const parlayMatchupsHaveStarted: Matchup[] = await prisma.matchups.findMany({
       where: {
@@ -232,11 +226,11 @@ export async function POST(req: NextRequest) {
     if (parlayMatchupsHaveStarted.length) {
       return NextResponse.json({ error: "At least 1 matchup has started" }, { status: 403 });
     }
+
     const updatedPicks = await prisma.$transaction(async tx => {
       const updatedPicks = [];
-
-      const existingDbPicks = latestParlay?.picks ?? [];
-      const activePicksIds = picks.map(({ id }) => id);
+      const existingDbPicks = parlayId === latestParlay?.id ? latestParlay.picks : [];
+      const activePicksIds = picks.map(({ pickId }) => pickId);
       const pickIdsToDelete = existingDbPicks
         .map(({ id }) => id)
         .filter(id => !activePicksIds.includes(id));
@@ -247,9 +241,9 @@ export async function POST(req: NextRequest) {
       console.log(`Deleted ${deletedPicks.count} picks from parlayId ${parlayId}`);
 
       for (const pick of picks) {
-        const { useLatestOdds, oddsId, matchupId, id } = pick;
+        const { useLatestOdds, oddsId, matchupId, pickId } = pick;
         // New pick. Also handle case were pick was deleted from active picks here
-        if (!id) {
+        if (!pickId) {
           const createdPick = await tx.pick.create({
             data: {
               userId: user.id,
@@ -263,23 +257,21 @@ export async function POST(req: NextRequest) {
           });
           updatedPicks.push(createdPick);
         } else {
-          const existingPick = existingDbPicks.find(pick => pick.id === id);
+          const existingPick = existingDbPicks.find(({ id }) => id === pickId);
           if (!existingPick) {
             throw new Error("Existing pick not found");
           }
 
           const useLatestOddsWasUpdated = existingPick.useLatestOdds !== useLatestOdds;
-          const existingPickWasUpdated = existingPick.pick !== pick.pick;
 
-          if (useLatestOddsWasUpdated || existingPickWasUpdated) {
+          if (useLatestOddsWasUpdated) {
             const updatedPick = await tx.pick.update({
-              where: { id },
+              where: { id: pickId },
               data: {
-                // these are the only 3 settings user should be able to change
+                // these are the only 2 pick settings user can update
                 ...(useLatestOddsWasUpdated ? { useLatestOdds } : undefined),
-                ...(useLatestOddsWasUpdated ? { oddsId } : undefined),
-                ...(existingPickWasUpdated ? { pick: pick.pick } : undefined),
-                // TODO add the userUpdatedAt timestamp here
+                ...(useLatestOdds ? { oddsId } : undefined),
+                userUpdatedAt: new Date(),
               },
             });
             updatedPicks.push(updatedPick);
