@@ -82,6 +82,7 @@ export async function GET() {
         },
       },
       select: {
+        id: true,
         strHomeTeam: true,
         strAwayTeam: true,
         oddsType: true,
@@ -99,17 +100,26 @@ export async function GET() {
       pickHistory = allParlayPicks.map(parlay => {
         return parlay.map(pick => {
           const { matchupId, oddsId, odds, id, useLatestOdds } = pick;
-          const matchup = activeMatchups.find(({ strHomeTeam, strAwayTeam }) =>
-            [strHomeTeam, strAwayTeam].includes(pick.pick)
-          );
+          const matchup = activeMatchups.find(({ id }) => id === matchupId);
           if (!matchup) {
             throw new Error("Matchup not found");
           }
           const { strAwayTeam, awayBadgeId, homeBadgeId, oddsType } = matchup;
           const pickIsAwayTeam = strAwayTeam === pick.pick;
+
+          let pickOdds;
+          let badge = "";
           // TODO handle draw odds here
-          const pickOdds = pickIsAwayTeam ? odds.awayOdds! : odds.homeOdds!;
-          const badge = pickIsAwayTeam ? awayBadgeId : homeBadgeId;
+          if (oddsType === "totals") {
+            pickOdds = pick.pick === "over" ? odds.overOdds : odds.underOdds;
+          } else {
+            pickOdds = pickIsAwayTeam ? odds.awayOdds! : odds.homeOdds!;
+            badge = pickIsAwayTeam ? awayBadgeId : homeBadgeId;
+          }
+
+          if (!pickOdds) {
+            throw new Error("Error parsing odds");
+          }
 
           return {
             pickId: id,
