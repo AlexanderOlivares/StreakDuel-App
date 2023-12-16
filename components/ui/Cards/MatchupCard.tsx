@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { humanReadableDate } from "@/lib/dateTime.ts/dateFormatter";
 import Image from "next/image";
-import { ODDS_TYPE_LOOKUP } from "@/lib/textFormatting.ts/constants";
+import { ODDS_TYPE_LOOKUP, TBD_PICK_RESULT_STATUS } from "@/lib/textFormatting.ts/constants";
 import ConfirmPickModal from "../modals/ConfirmPickModal";
 import { useParlayContext } from "@/context/ParlayProvider";
 import { MatchupWithOdds } from "@/lib/types/interfaces";
@@ -45,10 +45,16 @@ export default function MatchupCard(props: MatchupWithOdds) {
   const { activePicks, pickHistory, locked } = parlayContext.state;
   const [confirmPickModalOpen, setConfirmPickModalOpen] = useState<boolean>(false);
   const [existingPick, setExistingPick] = useState<string>("");
+  const [pickResult, setPickResult] = useState<string>(TBD_PICK_RESULT_STATUS);
 
   useEffect(() => {
     const existingPickFound = pickHistory?.find(({ matchupId }) => matchupId === id);
-    existingPickFound ? setExistingPick(existingPickFound.pick) : setExistingPick("");
+    if (existingPickFound) {
+      setExistingPick(existingPickFound.pick);
+      setPickResult(existingPickFound.result);
+    } else {
+      setExistingPick("");
+    }
   }, [id, pickHistory]);
 
   function handlePick(pickVerticalBarOdds: string) {
@@ -63,6 +69,7 @@ export default function MatchupCard(props: MatchupWithOdds) {
       badge,
       oddsType,
       useLatestOdds: false, // TODO handle this
+      result: TBD_PICK_RESULT_STATUS,
     };
 
     const isChangingPick = !!existingPick && existingPick !== pick;
@@ -84,6 +91,13 @@ export default function MatchupCard(props: MatchupWithOdds) {
 
   const formatOdds = (odds: number) => (odds > 0 ? `+${odds}` : odds);
 
+  const getMatchupDisplayStatus = (status: string, strTimestamp: string, pickResult: string) => {
+    if (["win", "draw", "loss"].includes(pickResult)) return pickResult;
+    if (status === "NS") return humanReadableDate(strTimestamp).slice(-8);
+    if (status === "IP") return "locked";
+    return status;
+  };
+
   return (
     <>
       <ConfirmPickModal
@@ -97,9 +111,9 @@ export default function MatchupCard(props: MatchupWithOdds) {
           </div>
 
           <div className="stat place-items-center">
-            <div className="stat-title">{`${
-              status !== "NS" ? "locked" : humanReadableDate(strTimestamp).slice(-8)
-            }`}</div>
+            <div className="stat-title">
+              {getMatchupDisplayStatus(status, strTimestamp, pickResult)}
+            </div>
           </div>
 
           <div className="stat place-items-end">

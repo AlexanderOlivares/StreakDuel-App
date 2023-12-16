@@ -24,6 +24,7 @@ export interface IPick {
   badge: string;
   oddsType: string;
   useLatestOdds: boolean;
+  result: string;
 }
 
 export interface BaseDbPick {

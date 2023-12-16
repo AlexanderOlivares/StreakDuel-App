@@ -10,3 +10,5 @@ export const ODDS_TYPE_LOOKUP: OddsTypeLookup = {
   totals: "Totals",
   pointspread: "Point Spread",
 };
+
+export const TBD_PICK_RESULT_STATUS = "TBD";
