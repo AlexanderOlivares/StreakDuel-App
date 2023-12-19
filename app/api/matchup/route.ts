@@ -31,7 +31,12 @@ export async function GET() {
       ],
     });
 
-    return NextResponse.json({ matchups, displayDates }, { status: 200 });
+    const headers = {
+      "Cache-Control": "no-cache",
+      Expires: "0",
+    };
+
+    return NextResponse.json({ matchups, displayDates }, { status: 200, headers });
   } catch (error) {
     console.log(error);
     return NextResponse.json({ error }, { status: 500 });
