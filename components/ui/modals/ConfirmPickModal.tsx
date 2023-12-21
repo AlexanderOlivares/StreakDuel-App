@@ -1,4 +1,6 @@
 import { useParlayContext } from "@/context/ParlayProvider";
+import { calculateParlayPayout, formatDisplayOdds } from "@/lib/oddsUtils/oddsUtils";
+import { IPick } from "@/lib/types/interfaces";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import Image from "next/image";
@@ -9,8 +11,7 @@ interface ConfirmPickModalProps {
 }
 
 interface UpsertParlayProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  picks: any;
+  picks: IPick[];
 }
 
 function upsertParlay(mutationProps: UpsertParlayProps) {
@@ -20,7 +21,7 @@ function upsertParlay(mutationProps: UpsertParlayProps) {
 function ConfirmPickModal({ open, setConfirmPickModalOpen }: ConfirmPickModalProps) {
   const queryClient = useQueryClient();
   const parlayContext = useParlayContext();
-  const { activePicks, dbActivePicks } = parlayContext.state;
+  const { activePicks, dbActivePicks, activePoints } = parlayContext.state;
 
   const parlay = useMutation({
     mutationFn: (mutationProps: UpsertParlayProps) => upsertParlay(mutationProps),
@@ -41,7 +42,6 @@ function ConfirmPickModal({ open, setConfirmPickModalOpen }: ConfirmPickModalPro
 
   function handleClose() {
     setConfirmPickModalOpen(false);
-    // TODO don't clear out all active picks on cancel
     parlayContext.dispatch({
       type: "addActivePick",
       payload: {
@@ -76,14 +76,23 @@ function ConfirmPickModal({ open, setConfirmPickModalOpen }: ConfirmPickModalPro
     });
   }
 
-  // TODO calculate the parlay odds and show potential points to award
+  function getDisplayOdds(activePicks: IPick[]) {
+    const activePickOdds = activePicks.map(({ pickOdds }) => pickOdds);
+    return calculateParlayPayout(activePoints, activePickOdds);
+  }
+
   return (
     <>
       <dialog id="confirm-pick-modal" className="modal" open={open}>
         <div className="modal-box">
-          <h3 className="font-bold text-lg">{activePicks?.[0]?.pick}</h3>
-          <h3 className="font-bold text-lg">{activePicks?.[0]?.pickOdds}</h3>
-          <p className="py-4">Press ESC key or click outside to close</p>
+          <h3 className="font-bold text-lg">
+            {activePicks.length > 1 ? "Parlay" : activePicks?.[0]?.pick}
+          </h3>
+          <h3 className="font-bold text-lg">{`Points wagered: ${activePoints}`}</h3>
+          <h3 className="font-bold text-lg">
+            {`To win: ${activePicks.length > 0 ? getDisplayOdds(activePicks) : "0"}`}
+          </h3>
+          <p className="py-4"></p>
           <div className="overflow-x-auto">
             <table className="table">
               {/* head */}
@@ -125,7 +134,7 @@ function ConfirmPickModal({ open, setConfirmPickModalOpen }: ConfirmPickModalPro
                             </svg>
                           </button>
                         </th>
-                        <td>{pick.pickOdds}</td>
+                        <td>{formatDisplayOdds(pick.pickOdds)}</td>
                         <td>
                           <div className="flex items-center space-x-3">
                             {pick.badge && (

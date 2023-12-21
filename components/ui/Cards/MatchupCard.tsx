@@ -7,6 +7,7 @@ import { ODDS_TYPE_LOOKUP, TBD_PICK_RESULT_STATUS } from "@/lib/textFormatting.t
 import ConfirmPickModal from "../modals/ConfirmPickModal";
 import { useParlayContext } from "@/context/ParlayProvider";
 import { MatchupWithOdds } from "@/lib/types/interfaces";
+import { formatDisplayOdds } from "@/lib/oddsUtils/oddsUtils";
 
 export type OddsType = "money-line" | "totals" | "pointspread";
 export type OddsScope =
@@ -89,8 +90,6 @@ export default function MatchupCard(props: MatchupWithOdds) {
     setConfirmPickModalOpen(true);
   }
 
-  const formatOdds = (odds: number) => (odds > 0 ? `+${odds}` : odds);
-
   const getMatchupDisplayStatus = (status: string, strTimestamp: string, pickResult: string) => {
     if (["win", "draw", "loss"].includes(pickResult)) return pickResult;
     if (status === "NS") return humanReadableDate(strTimestamp).slice(-8);
@@ -168,7 +167,9 @@ export default function MatchupCard(props: MatchupWithOdds) {
                 />
               </label>
               <div className="label-text text-xl">
-                {oddsType === "totals" ? formatOdds(overOdds!) : formatOdds(awayOdds!)}
+                {oddsType === "totals"
+                  ? formatDisplayOdds(overOdds!)
+                  : formatDisplayOdds(awayOdds!)}
               </div>
             </div>
             <div className="form-control mx-2">
@@ -193,7 +194,9 @@ export default function MatchupCard(props: MatchupWithOdds) {
                 />
               </label>
               <div className="label-text text-xl">
-                {oddsType === "totals" ? formatOdds(underOdds!) : formatOdds(homeOdds!)}
+                {oddsType === "totals"
+                  ? formatDisplayOdds(underOdds!)
+                  : formatDisplayOdds(homeOdds!)}
               </div>
             </div>
           </div>
