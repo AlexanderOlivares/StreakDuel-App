@@ -25,7 +25,9 @@ export default function MatchupBoard() {
   const parlayContext = useParlayContext();
   const [date, setDate] = useState<string>(moment().tz("America/Los_Angeles").format("YYYY-MM-DD"));
 
-  const { data, error, isLoading } = useQuery<GetMatchupsQuery>(["getMatchups"], getMatchups);
+  const { data, error, isLoading } = useQuery<GetMatchupsQuery>(["getMatchups"], getMatchups, {
+    cacheTime: 0,
+  });
 
   if (isLoading) return <Loading />;
 
