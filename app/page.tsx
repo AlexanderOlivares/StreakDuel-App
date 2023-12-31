@@ -27,6 +27,7 @@ export default function MatchupBoard() {
 
   const { data, error, isLoading } = useQuery<GetMatchupsQuery>(["getMatchups"], getMatchups, {
     cacheTime: 0,
+    staleTime: 0,
   });
 
   if (isLoading) return <Loading />;
@@ -35,7 +36,7 @@ export default function MatchupBoard() {
     return <ComponentError />;
   }
 
-  console.log({ parlayContext });
+  console.log(parlayContext.state);
 
   return (
     <>
