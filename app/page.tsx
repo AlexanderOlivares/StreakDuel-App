@@ -6,16 +6,13 @@ import { useQuery } from "@tanstack/react-query";
 import Loading from "@/components/utils/Loading";
 import { DayToDateDict, isSameDay } from "@/lib/dateTime.ts/dateFormatter";
 import ComponentError from "@/components/utils/ComponentError";
-import axios from "axios";
 import MatchupCard from "@/components/ui/Cards/MatchupCard";
 import { useParlayContext } from "../context/ParlayProvider";
 import { MatchupWithOdds } from "@/lib/types/interfaces";
 
 async function getMatchups() {
-  const response = await axios.get("/api/matchup", {
-    headers: { "Cache-Control": "no-cache" },
-  });
-  return response.data;
+  const response = await fetch("/api/matchup", { next: { revalidate: 3600 } });
+  return await response.json();
 }
 
 interface GetMatchupsQuery {
