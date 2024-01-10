@@ -12,7 +12,9 @@ import { useParlayContext } from "../context/ParlayProvider";
 import { MatchupWithOdds } from "@/lib/types/interfaces";
 
 async function getMatchups() {
-  const response = await axios.get("/api/matchup");
+  const response = await axios.get("/api/matchup", {
+    headers: { "Cache-Control": "no-cache" },
+  });
   return response.data;
 }
 
