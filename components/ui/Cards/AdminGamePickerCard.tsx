@@ -5,6 +5,8 @@ import { humanReadableDate } from "@/lib/dateTime.ts/dateFormatter";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import Image from "next/image";
+import { Matchup } from "@/lib/types/interfaces";
+import AdminUseGameForm from "../forms/AdminUseGameForm";
 
 export type OddsType = "money-line" | "totals" | "pointspread";
 export type OddsScope =
@@ -15,42 +17,6 @@ export type OddsScope =
   | "2nd-quarter"
   | "3rd-quarter"
   | "4th-quarter";
-
-export interface Matchup {
-  id: string;
-  idEvent: string;
-  idHomeTeam: string;
-  idAwayTeam: string;
-  idLeague: string;
-  strLeague: string;
-  strEvent: string;
-  strHomeTeam: string;
-  strAwayTeam: string;
-  strTimestamp: string;
-  strThumb: string;
-  drawEligible: boolean;
-  oddsType: string;
-  oddsScope: string;
-  drawTeam?: string | null;
-  adminSelected: boolean;
-  used: boolean;
-  awayScore: number | null;
-  homeScore: number | null;
-  pointsTotal: number | null;
-  status: string;
-  locked: boolean;
-  adminUnlocked: boolean;
-  adminCorrected: boolean;
-}
-
-interface UseGameMutationProps {
-  id: string;
-  adminSelected: boolean | null;
-}
-
-function updateAdminUseGame(mutationProps: UseGameMutationProps) {
-  return axios.put("/admin/matchups/picker/api/use-game", mutationProps);
-}
 
 interface MatchupTypeMutationProps {
   id: string;
@@ -79,16 +45,6 @@ export default function AdminGamePickerCard(props: Matchup) {
   const radioId = `radio-${id}`;
 
   const queryClient = useQueryClient();
-
-  const adminUseGameMutation = useMutation({
-    mutationFn: (mutationProps: UseGameMutationProps) => updateAdminUseGame(mutationProps),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["getPotentialMatchups"] });
-    },
-    onError: error => {
-      console.error(error);
-    },
-  });
 
   const updateMatchupTypeMutation = useMutation({
     mutationFn: (matchupType: MatchupTypeMutationProps) => updateMatchupType(matchupType),
@@ -120,17 +76,7 @@ export default function AdminGamePickerCard(props: Matchup) {
           </div>
           <h2 className="card-title">{`${strAwayTeam} at ${strHomeTeam}`}</h2>
           <p>{humanReadableDate(strTimestamp)}</p>
-          <div className="form-control">
-            <label className="label cursor-pointer">
-              <span className="label-text">Use Game</span>
-              <input
-                type="checkbox"
-                onChange={() => adminUseGameMutation.mutate({ id, adminSelected })}
-                checked={adminSelected ?? false}
-                className="checkbox checkbox-primary"
-              />
-            </label>
-          </div>
+          <AdminUseGameForm {...{ adminSelected, id }} />
           <div className="card-actions mt-3 justify-center">
             <div className="form-control">
               <label className="label cursor-pointer">

@@ -1,63 +1,49 @@
-"use client";
-
-import React, { useState } from "react";
+import React from "react";
 import moment from "moment";
-import { useQuery } from "@tanstack/react-query";
-import AdminGamePickerCard, { Matchup } from "@/components/ui/Cards/AdminGamePickerCard";
-import Loading from "@/components/utils/Loading";
-import { DayToDateDict, isSameDay } from "@/lib/dateTime.ts/dateFormatter";
-import ComponentError from "@/components/utils/ComponentError";
-import axios from "axios";
+import prisma from "@/lib/prisma";
+import { Matchup } from "@/lib/types/interfaces";
+import { dayRangeLaTimezone, getCurrentWeekDates } from "@/lib/dateTime.ts/dateFormatter";
+import AdminGamePickerBoard from "@/app/components/admin/AdminGamePickerBoard";
 
-async function getPotentialMatchups() {
-  const response = await axios.get("/admin/matchups/picker/api");
-  return response.data;
-}
+const Picker = async () => {
+  const now = moment().format("YYYYMMDD");
+  const weekDates = getCurrentWeekDates(now);
 
-interface GetMatchupsQuery {
-  matchups: Matchup[];
-  weekDates: DayToDateDict;
-}
+  const dateRanges = Object.values(weekDates).map(date => {
+    const range = dayRangeLaTimezone(date);
+    return {
+      strTimestamp: range,
+    };
+  });
 
-export default function Picker() {
-  const [date, setDate] = useState<string>(moment().tz("America/Los_Angeles").format("YYYY-MM-DD"));
+  const matchups: Matchup[] = await prisma.matchups.findMany({
+    where: {
+      OR: dateRanges,
+    },
+    orderBy: [
+      {
+        strTimestamp: "asc",
+      },
+      {
+        id: "asc",
+      },
+    ],
+  });
 
-  const { data, error, isLoading } = useQuery<GetMatchupsQuery>(
-    ["getPotentialMatchups"],
-    getPotentialMatchups
-  );
-
-  if (isLoading) return <Loading />;
-
-  if (!data?.matchups || !data?.weekDates || error) {
-    return <ComponentError />;
-  }
+  // TODO review this and remove next tuesday
+  // Next Tuesday is not part of the current week's cycle of games so safe to omit it. It's only used
+  // above to get Next Monday's game times that officially start on next Tuesday in UTC time.
+  // eslint-disable-next-line
+  // const { "Next Tuesday": _, ...relevantDays } = weekDates;
 
   return (
     <>
       <h1 className="text-3xl md:text-5xl mb-4 font-extrabold" id="home">
         Admin Game Picker
       </h1>
-      <div className="tabs tabs-boxed">
-        {Object.entries(data.weekDates).map(([day, dateString]) => {
-          return (
-            <a
-              key={day}
-              onClick={() => setDate(dateString)}
-              className={`tab tab-sm ${isSameDay(dateString, date) ? "tab-active" : ""}`}
-            >
-              {day}
-            </a>
-          );
-        })}
-      </div>
-      {data.matchups
-        .filter(({ strTimestamp }) =>
-          isSameDay(moment(strTimestamp).tz("America/Los_Angeles").format("YYYY-MM-DD"), date)
-        )
-        .map(game => {
-          return <AdminGamePickerCard key={game.id} {...game} />;
-        })}
+      <AdminGamePickerBoard {...{ matchups, displayDates: weekDates }} />
     </>
   );
-}
+};
+
+export default Picker;
