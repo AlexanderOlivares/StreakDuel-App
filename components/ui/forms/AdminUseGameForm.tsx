@@ -3,6 +3,7 @@
 import { adminUseGame } from "@/app/actions/admin/GamePicker";
 import { Matchup } from "@/lib/types/interfaces";
 import React, { useState } from "react";
+import AdminUseGameFormButton from "../buttons/AdminUseGameFormButton";
 
 function AdminUseGameForm(props: Matchup) {
   const { strHomeTeam, strAwayTeam, drawEligible, id, adminSelected, oddsType } = props;
@@ -95,9 +96,7 @@ function AdminUseGameForm(props: Matchup) {
           </>
         )}
       </div>
-      <button className="btn btn-sm" type="submit">
-        save
-      </button>
+      <AdminUseGameFormButton />
     </form>
   );
 }
