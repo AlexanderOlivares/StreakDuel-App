@@ -95,7 +95,7 @@ function AdminUseGameForm(props: Matchup) {
           </>
         )}
       </div>
-      <button className="btn" type="submit">
+      <button className="btn btn-sm" type="submit">
         save
       </button>
     </form>
