@@ -46,6 +46,18 @@ export interface DbPickWithOdds extends BaseDbPick {
   odds: Odds;
 }
 
+export type OddsType = "money-line" | "totals" | "pointspread";
+
+// OddsScope not in use now. Keeping for future for non-full-game props
+export type OddsScope =
+  | "full-game"
+  | "1st-half"
+  | "2nd-half"
+  | "1st-quarter"
+  | "2nd-quarter"
+  | "3rd-quarter"
+  | "4th-quarter";
+
 export interface Matchup {
   id: string;
   idEvent: string;
