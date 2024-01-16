@@ -5,7 +5,7 @@ import { useFormStatus } from "react-dom";
 function AdminUseGameFormButton() {
   const { pending } = useFormStatus();
   return (
-    <button className="btn btn-sm" type="submit">
+    <button className="btn btn-sm" type="submit" disabled={pending}>
       {pending ? "saving..." : "save"}
     </button>
   );

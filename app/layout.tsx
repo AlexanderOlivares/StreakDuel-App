@@ -9,7 +9,6 @@ import Footer from "@/components/ui/Footer";
 import PromoBar from "@/components/ui/PromoBar";
 import Card from "@/components/ui/Cards/Card";
 import AuthProvider from "../context/AuthProvider";
-import UserDataFetcher from "@/components/utils/UserDataFetcher";
 import { ParlayContextProvider } from "../context/ParlayProvider";
 
 const queryClient = new QueryClient();
@@ -22,7 +21,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <AuthProvider>
         <QueryClientProvider client={queryClient}>
           <ParlayContextProvider>
-            <UserDataFetcher />
             <body className={inter.className}>
               <Nav />
               <PromoBar />
