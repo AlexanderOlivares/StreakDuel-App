@@ -1,6 +1,6 @@
 "use client";
 
-import { adminUseGame } from "@/app/actions/admin/GamePicker";
+import { adminUseGame } from "@/app/actions/admin/adminUseGame";
 import { Matchup } from "@/lib/types/interfaces";
 import React, { useState } from "react";
 import AdminUseGameFormButton from "../buttons/AdminUseGameFormButton";
