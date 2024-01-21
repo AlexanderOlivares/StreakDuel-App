@@ -27,6 +27,13 @@ export interface IPick {
   result: string;
 }
 
+export interface PickHistory {
+  // pickId: string;
+  matchupId: string;
+  pick: string;
+  result: string;
+}
+
 export interface BaseDbPick {
   id: string;
   userId: string;
@@ -58,22 +65,24 @@ export type OddsScope =
   | "3rd-quarter"
   | "4th-quarter";
 
-export interface Matchup {
+export interface BaseMatchup {
   id: string;
+  strHomeTeam: string;
+  strAwayTeam: string;
+  oddsType: string;
+  awayBadgeId: string;
+  homeBadgeId: string;
+}
+export interface Matchup extends BaseMatchup {
   idEvent: string;
   idHomeTeam: string;
   idAwayTeam: string;
   idLeague: string;
   strLeague: string;
   strEvent: string;
-  strHomeTeam: string;
-  strAwayTeam: string;
   strTimestamp: string;
   strThumb: string;
-  awayBadgeId: string;
-  homeBadgeId: string;
   drawEligible: boolean;
-  oddsType: string;
   oddsScope: string;
   drawTeam?: string | null;
   adminSelected: boolean;

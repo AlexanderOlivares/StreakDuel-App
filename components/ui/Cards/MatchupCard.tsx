@@ -80,11 +80,21 @@ export default function MatchupCard(props: MatchupWithOdds) {
     // do nothing and open up modal to allow edits there
     const pickedExistingPick = !isChangingPick && existingPick === pick;
 
+    const updatedPickHistory =
+      pickHistory?.filter(({ pick }) => !(isChangingPick && existingPick === pick)) ?? [];
+
+    const newPickHistory = {
+      matchupId: id,
+      pick,
+      result: TBD_PICK_RESULT_STATUS,
+    };
+
     parlayContext.dispatch({
       type: "addActivePick",
       payload: {
         ...parlayContext.state,
         activePicks: [...updatedActivePicks, ...(pickedExistingPick ? [] : [newPick])],
+        pickHistory: [...(pickedExistingPick ? [] : [newPickHistory]), ...updatedPickHistory],
       },
     });
     setConfirmPickModalOpen(true);

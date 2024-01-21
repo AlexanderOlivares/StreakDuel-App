@@ -1,12 +1,14 @@
 import { getServerSession } from "next-auth";
 import { options } from "../api/auth/[...nextauth]/options";
 import prisma from "@/lib/prisma";
-import { IPick, ParlayWithPicksAndOdds } from "@/lib/types/interfaces";
+import { IPick, ParlayWithPicksAndOdds, PickHistory } from "@/lib/types/interfaces";
+import { getActiveMatchups, getActivePicks, getPickHistory } from "./utils/parlayUtils";
 import { unstable_cache } from "next/cache";
 
 export interface GetParlays {
   parlays: ParlayWithPicksAndOdds[];
-  pickHistory: IPick[];
+  pickHistory: PickHistory[];
+  dbPickHistory: PickHistory[];
   activePoints: number;
   activePicks: IPick[];
   dbActivePicks: IPick[];
@@ -19,6 +21,7 @@ export const getParlays = unstable_cache(
     const defaultState: GetParlays = {
       parlays: [],
       pickHistory: [],
+      dbPickHistory: [],
       activePoints: 100, // decide on default here
       locked: false,
       activePicks: [],
@@ -72,8 +75,8 @@ export const getParlays = unstable_cache(
       }
 
       // TODO tidy up and test this logic
-      const existingParlay = parlays?.[0] ?? [];
-      const allParlayPicks = parlays.map(parlay => parlay.picks) ?? [];
+      const existingParlay: ParlayWithPicksAndOdds | Record<string, never> = parlays?.[0] ?? {};
+      const allParlayPicks = parlays.flatMap(parlay => parlay.picks) ?? [];
 
       if (!parlays.length && !createdParlay) {
         return { ...defaultState, error: "No parlay found" };
@@ -93,75 +96,21 @@ export const getParlays = unstable_cache(
         activePoints = parlayIsOver ? existingParlay.pointsAwarded : existingParlay.pointsWagered;
       }
 
-      const activeMatchups = await prisma.matchups.findMany({
-        where: {
-          id: {
-            in: allParlayPicks.flatMap(parlay => parlay.map(({ matchupId }) => matchupId)),
-          },
-        },
-        select: {
-          id: true,
-          strHomeTeam: true,
-          strAwayTeam: true,
-          oddsType: true,
-          awayBadgeId: true,
-          homeBadgeId: true,
-        },
-      });
+      const activeMatchups = await getActiveMatchups(
+        allParlayPicks.map(({ matchupId }) => matchupId)
+      );
 
-      // TODO do this transformation for pickHistory and then copy the picks from first parlay to activePicks
-      let activePicks: IPick[] = [];
-      const pickHistory: IPick[][] = allParlayPicks.map(parlay => {
-        return parlay.map(pick => {
-          const { matchupId, oddsId, odds, id, useLatestOdds, result } = pick;
-          const matchup = activeMatchups.find(({ id }) => id === matchupId);
-          if (!matchup) {
-            throw new Error("Matchup not found");
-          }
-          const { strAwayTeam, awayBadgeId, homeBadgeId, oddsType } = matchup;
-          const pickIsAwayTeam = strAwayTeam === pick.pick;
-
-          let pickOdds;
-          let badge = "";
-          // TODO handle draw odds here
-          if (oddsType === "totals") {
-            pickOdds = pick.pick === "over" ? odds.overOdds : odds.underOdds;
-          } else {
-            pickOdds = pickIsAwayTeam ? odds.awayOdds! : odds.homeOdds!;
-            badge = pickIsAwayTeam ? awayBadgeId : homeBadgeId;
-          }
-
-          if (!pickOdds) {
-            throw new Error("Error parsing odds");
-          }
-
-          return {
-            pickId: id,
-            matchupId,
-            oddsId,
-            pick: pick.pick,
-            pickOdds,
-            badge,
-            oddsType,
-            useLatestOdds,
-            result,
-          };
-        });
-      });
-
-      if (createdParlay || parlayIsOver) {
-        activePicks = [];
-      } else {
-        activePicks = pickHistory[0];
-      }
+      const activePicks = getActivePicks(existingParlay, activeMatchups);
+      const pickHistory = getPickHistory(allParlayPicks, activeMatchups);
 
       return {
         parlays,
-        pickHistory: pickHistory.flat(),
+        pickHistory,
         activePoints,
         locked,
         activePicks,
         dbActivePicks: activePicks,
+        dbPickHistory: pickHistory,
       };
     } catch (error) {
       console.log(error);
@@ -169,5 +118,5 @@ export const getParlays = unstable_cache(
     }
   },
   ["parlays"],
-  { tags: ["parlays"], revalidate: 5 }
+  { tags: ["parlays"], revalidate: 10 }
 );

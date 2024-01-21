@@ -1,12 +1,11 @@
-// @ts-expect-error no types yet
-import { useFormState } from "react-dom";
+// import { useFormState } from "react-dom";
 import { upsertParlay } from "@/app/actions/parlay/upsertParlay";
 import { useParlayContext } from "@/context/ParlayProvider";
 import { calculateParlayPayout, formatDisplayOdds } from "@/lib/oddsUtils/oddsUtils";
 import { IPick } from "@/lib/types/interfaces";
 import Image from "next/image";
 import ConfirmPickModalButton from "../buttons/ConfirmPickModalButton";
-import { useEffect } from "react";
+// import { useEffect, useState } from "react";
 
 interface ConfirmPickModalProps {
   open: boolean;
@@ -15,26 +14,31 @@ interface ConfirmPickModalProps {
 
 function ConfirmPickModal({ open, setConfirmPickModalOpen }: ConfirmPickModalProps) {
   const parlayContext = useParlayContext();
-  const { activePicks, dbActivePicks, activePoints } = parlayContext.state;
+  const { activePicks, dbActivePicks, activePoints, pickHistory, dbPickHistory } =
+    parlayContext.state;
 
-  function handleClose() {
-    setConfirmPickModalOpen(false);
+  function handleClose(e: React.MouseEvent<HTMLButtonElement>) {
+    e.preventDefault();
     parlayContext.dispatch({
       type: "addActivePick",
       payload: {
         ...parlayContext.state,
         activePicks: dbActivePicks,
+        pickHistory: dbPickHistory,
       },
     });
+    setConfirmPickModalOpen(false);
   }
 
   function handleRemovePick(matchupId: string) {
     const picks = activePicks.filter(pick => pick.matchupId !== matchupId);
+    const history = pickHistory.filter(pick => pick.matchupId !== matchupId);
     parlayContext.dispatch({
-      type: "addActivePick",
+      type: "removeActivePick",
       payload: {
         ...parlayContext.state,
         activePicks: picks,
+        pickHistory: history,
       },
     });
   }
@@ -45,7 +49,7 @@ function ConfirmPickModal({ open, setConfirmPickModalOpen }: ConfirmPickModalPro
       ...(pickId === pick.pickId ? { useLatestOdds } : {}),
     }));
     parlayContext.dispatch({
-      type: "addActivePick",
+      type: "toggleUseLatestOdds",
       payload: {
         ...parlayContext.state,
         activePicks: picks,
@@ -58,31 +62,65 @@ function ConfirmPickModal({ open, setConfirmPickModalOpen }: ConfirmPickModalPro
     return calculateParlayPayout(activePoints, activePickOdds);
   }
 
-  // const [formState, formAction] = useFormState(upsertParlay, parlayContext.state.activePicks);
+  // function setPickHistory(activePicks: IPick[]){
+  //   const activePickIds = activePicks.map(pick=> pick.pickId);
+  //   const historyPickIds = pickHistory.map(pick=> pick.pickId);
 
-  // console.log({ formState });
+  // const deletedRemoved = pickHistory.filter(pick=> activePickIds.includes(pick.pickId));
+  //   let a = [];
+  //   // adding a new pick not in history
+  //   for (const pickId of activePickIds){
+  //     if (!pickId) continue;
+  //     if (!historyPickIds.includes(pickId)) {
+  //       a.push(pickId);
+  //     }
+  //   }
+  //   for (const pickId of historyPickIds){
+  //     if (!pickId) continue;
+  //     if (activePickIds.includes(pickId)) {
+  //       a.push(pickId);
+  //     }
+  //   }
+  // }
+
+  // console.log(pickHistory);
+
+  // const [formState, formAction] = useFormState(upsertParlay, []);
+
   // useEffect(() => {
-  //   if (activePicks !== formState) {
-  //     console.log({
-  //       formState,
-  //       isDiff: true,
-  //     });
+  //   console.log({ formState });
+  //   if (formState?.success && formState?.activePicks !== activePicks) {
+  //     const { activePicks, pickHistory } = formState;
   //     parlayContext.dispatch({
   //       type: "addActivePick",
   //       payload: {
   //         ...parlayContext.state,
-  //         activePicks: formState,
+  //         activePicks,
+  //         dbActivePicks: activePicks,
+  //         pickHistory,
   //       },
   //     });
-  //     setConfirmPickModalOpen(false);
+  //     if (formState?.success) {
+  //       setConfirmPickModalOpen(false);
+  //     }
   //   }
   // }, [formState]);
+
+  const submitForm = async (formData: FormData) => {
+    const result = await upsertParlay(formData);
+    if (result?.error) {
+      // TODO add toast here
+      alert(result.error);
+    } else {
+      setConfirmPickModalOpen(false);
+    }
+  };
 
   return (
     <>
       <dialog id="confirm-pick-modal" className="modal" open={open}>
         <div className="modal-box">
-          <form action={upsertParlay} method="dialog">
+          <form action={submitForm} method="dialog">
             {/* <form action={formAction} method="dialog"> */}
             <h3 className="font-bold text-lg">
               {activePicks.length > 1 ? "Parlay" : activePicks?.[0]?.pick}
@@ -161,7 +199,18 @@ function ConfirmPickModal({ open, setConfirmPickModalOpen }: ConfirmPickModalPro
                               checked={pick.useLatestOdds}
                               onChange={() => handleUseLatestOdds(!pick.useLatestOdds, pick.pickId)}
                             />
-                            <input hidden={true} name="picks" value={JSON.stringify(activePicks)} />
+                            <input
+                              hidden={true}
+                              readOnly
+                              name="picks"
+                              value={JSON.stringify(activePicks)}
+                            />
+                            {/* <input
+                              hidden={true}
+                              readOnly
+                              name="pickHistory"
+                              value={JSON.stringify(pickHistory)}
+                            /> */}
                           </td>
                         </tr>
                       );

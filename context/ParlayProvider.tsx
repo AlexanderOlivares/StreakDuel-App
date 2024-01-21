@@ -1,10 +1,11 @@
-import { IPick, ParlayWithPicksAndOdds } from "@/lib/types/interfaces";
+import { IPick, ParlayWithPicksAndOdds, PickHistory } from "@/lib/types/interfaces";
 import { createContext, useContext, useReducer } from "react";
 import type { ReactNode } from "react";
 
 export interface ParlayState {
   parlays: ParlayWithPicksAndOdds[]; // high scores for broken streaks can be calculated form this
-  pickHistory: IPick[]; // previous picks that have outcomes, used to keep finished matchups checked in UI
+  pickHistory: PickHistory[]; // previous picks that have outcomes, used to keep finished matchups checked in UI
+  dbPickHistory: PickHistory[];
   activePicks: IPick[];
   dbActivePicks: IPick[];
   activePoints: number;
@@ -14,6 +15,7 @@ export interface ParlayState {
 const defaultState: ParlayState = {
   parlays: [],
   pickHistory: [],
+  dbPickHistory: [],
   activePicks: [],
   dbActivePicks: [],
   activePoints: 100,
@@ -41,6 +43,7 @@ function parlayContextReducer(state: ParlayState, action: ParlayAction): ParlayS
       return {
         parlays: payload.parlays,
         pickHistory: payload.pickHistory,
+        dbPickHistory: payload.pickHistory,
         activePoints: payload.activePoints,
         dbActivePicks: payload.activePicks,
         activePicks: payload.activePicks,
@@ -50,7 +53,24 @@ function parlayContextReducer(state: ParlayState, action: ParlayAction): ParlayS
       return {
         ...state,
         activePicks: payload.activePicks,
+        pickHistory: payload.pickHistory,
       };
+    case "removeActivePick":
+      return {
+        ...state,
+        activePicks: payload.activePicks,
+        pickHistory: payload.pickHistory,
+      };
+    case "toggleUseLatestOdds":
+      return {
+        ...state,
+        activePicks: payload.activePicks,
+      };
+    // case "setPickHistory":
+    //   return {
+    //     ...state,
+    //     pickHistory: payload.pickHistory,
+    //   };
     default:
       return state;
   }
@@ -64,5 +84,6 @@ export function ParlayContextProvider({ children }: { children: ReactNode }) {
 export function useParlayContext() {
   const context = useContext(ParlayContext);
   if (!context) throw new Error("no parlay context found");
+  // console.log(context.state);
   return context;
 }

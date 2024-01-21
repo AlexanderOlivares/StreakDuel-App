@@ -7,6 +7,14 @@ import { getServerSession } from "next-auth/next";
 import { revalidateTag } from "next/cache";
 import { z } from "zod";
 
+// const PickHistory = z.object({
+//   matchupId: z.string(),
+//   pick: z.string(),
+//   result: z.string(),
+// });
+// const ArrayOfPickHistory = z.array(PickHistory).nullable();
+// const StringifiedPickHistorySchema = z.string(ArrayOfPickHistory).nullable();
+
 const IPickSchema = z.object({
   pickId: z.string().optional(), // default uuid assigned on pick insertion by prisma
   matchupId: z.string(),
@@ -19,10 +27,8 @@ const IPickSchema = z.object({
   result: z.string(),
 });
 const UpsertParlaySchema = z.array(IPickSchema).nullable();
-const StringifiedSchema = z.string(UpsertParlaySchema);
+const StringifiedSchema = z.string(UpsertParlaySchema).nullable();
 
-// TODO start converting this into action
-// export const upsertParlay = async (currentState: IPick[], formData: FormData) => {
 export const upsertParlay = async (formData: FormData) => {
   const genericError = { error: "Error saving pick(s)" };
 
@@ -32,9 +38,18 @@ export const upsertParlay = async (formData: FormData) => {
     const validation = StringifiedSchema.safeParse(rawPicks);
 
     if (!validation.success) {
+      console.log("RAW PICKS VALIDATION FAILED");
       console.log(validation.error);
       return genericError;
     }
+
+    // if (!pickHistoryValidation.success) {
+    //   console.log("PICK HISTORY VALIDATION FAILED");
+
+    //   console.log(pickHistoryValidation.error);
+    //   return genericError;
+    // }
+    // console.log({ picks, pickHistory });
 
     const session = await getServerSession(options);
 
@@ -94,7 +109,7 @@ export const upsertParlay = async (formData: FormData) => {
       parlayId = id;
     }
 
-    const picks: IPick[] = JSON.parse(validation.data);
+    const picks: IPick[] = JSON.parse(validation.data ?? JSON.stringify([]));
 
     const parlayMatchupsHaveStarted: Matchup[] = await prisma.matchups.findMany({
       where: {
@@ -107,7 +122,13 @@ export const upsertParlay = async (formData: FormData) => {
       return { error: "At least 1 matchup has started" };
     }
 
-    const updatedPicks = await prisma.$transaction(async tx => {
+    // interface UpdateParlayAndDeletedPicks {
+    //   updatedParlay: ParlayWithPicksAndOdds;
+    //   deletedPickIds: string[];
+    // }
+
+    // const updateParlayAndDeletedPicks: UpdateParlayAndDeletedPicks = await prisma.$transaction(
+    await prisma.$transaction(async tx => {
       const existingDbPicks = parlayId === latestParlay?.id ? latestParlay.picks : [];
       const activePicksIds = picks.map(({ pickId }) => pickId);
       const pickIdsToDelete = existingDbPicks
@@ -156,14 +177,66 @@ export const upsertParlay = async (formData: FormData) => {
         }
       }
 
-      return await tx.pick.findMany({ where: { parlayId } });
+      // return await tx.pick.findMany({ where: { parlayId }}  );
+      // return tx.parlay.findUnique({ where: { id: parlayId }});
+      // const updatedParlay = await tx.parlay.findUniqueOrThrow({
+      //   where: {
+      //     id: parlayId,
+      //   },
+      //   include: {
+      //     picks: {
+      //       orderBy: {
+      //         createdAt: "desc",
+      //       },
+      //       include: {
+      //         odds: true,
+      //       },
+      //     },
+      //   },
+      // });
+      // return { updatedParlay, deletedPickIds: pickIdsToDelete ?? [] };
     });
+
+    // interface MatchupAndPickIds {
+    //   matchupIds: string[];
+    //   pickIds: string[];
+    //   activePicksHistory: PickHistory[];
+    // }
+
+    // const activeMatchupsMap = updateParlayAndDeletedPicks.updatedParlay.picks.reduce((acc, cv) => {
+    //   const { id, matchupId, pick, result } = cv;
+    //   acc.set("matchupIds", [...(acc.get("matchupIds") ?? []), matchupId]);
+    //   acc.set("pickIds", [...(acc.get("pickIds") ?? []), id]);
+    //   acc.set("activePicksHistory", [
+    //     ...(acc.get("activePicksHistory") ?? []),
+    //     { matchupId, pick, result, pickId: id },
+    //   ]);
+    //   return acc;
+    // }, new Map<MatchupAndPickIds>());
+
+    // const activeMatchups = await getActiveMatchups(
+    //   // updatedParlay.picks.map(({ matchupId }) => matchupId)
+    //   activeMatchupsMap.get("matchupIds") ?? []
+    // );
+    // const activePicks = getActivePicks(updateParlayAndDeletedPicks.updatedParlay, activeMatchups);
+    // const pickHistory: PickHistory[] = pickHistoryValidation.data
+    //   ? JSON.parse(pickHistoryValidation.data)
+    //   : [];
+    // // const pickHistory: PickHistory[] = pickHistoryValidation.data ?? [];
+
+    // const updatedPickHistory: PickHistory[] = [
+    //   ...new Set(...activeMatchupsMap.get("activePicksHistory"), ...pickHistory),
+    // ].filter(pick => {
+    //   return !updateParlayAndDeletedPicks.deletedPickIds.includes(pick?.pickId);
+    // });
+
     revalidateTag("parlays");
-    console.log({
-      updatedPicks,
-      returning: true,
-    });
-    return updatedPicks;
+
+    // return {
+    //   activePicks,
+    //   pickHistory: updatedPickHistory,
+    //   success: true,
+    // };
   } catch (error) {
     console.log(error);
     return genericError;
