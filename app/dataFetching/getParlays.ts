@@ -100,7 +100,7 @@ export const getParlays = unstable_cache(
         allParlayPicks.map(({ matchupId }) => matchupId)
       );
 
-      const activePicks = getActivePicks(existingParlay, activeMatchups);
+      const activePicks = parlayIsOver ? [] : getActivePicks(existingParlay, activeMatchups);
       const pickHistory = getPickHistory(allParlayPicks, activeMatchups);
 
       return {

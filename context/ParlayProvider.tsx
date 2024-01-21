@@ -66,11 +66,12 @@ function parlayContextReducer(state: ParlayState, action: ParlayAction): ParlayS
         ...state,
         activePicks: payload.activePicks,
       };
-    // case "setPickHistory":
-    //   return {
-    //     ...state,
-    //     pickHistory: payload.pickHistory,
-    //   };
+    case "upsertParlaySuccess":
+      return {
+        ...state,
+        dbActivePicks: payload.dbActivePicks,
+        dbPickHistory: payload.dbPickHistory,
+      };
     default:
       return state;
   }

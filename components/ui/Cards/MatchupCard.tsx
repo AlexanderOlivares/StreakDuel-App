@@ -6,7 +6,7 @@ import Image from "next/image";
 import { ODDS_TYPE_LOOKUP, TBD_PICK_RESULT_STATUS } from "@/lib/textFormatting.ts/constants";
 import ConfirmPickModal from "../modals/ConfirmPickModal";
 import { useParlayContext } from "@/context/ParlayProvider";
-import { MatchupWithOdds } from "@/lib/types/interfaces";
+import { MatchupWithOdds, PickHistory } from "@/lib/types/interfaces";
 import { formatDisplayOdds } from "@/lib/oddsUtils/oddsUtils";
 
 export type OddsType = "money-line" | "totals" | "pointspread";
@@ -58,6 +58,7 @@ export default function MatchupCard(props: MatchupWithOdds) {
     }
   }, [id, pickHistory]);
 
+  // TODO fix this madness and make args an obj
   function handlePick(pickVerticalBarOdds: string) {
     // TODO make regex to verify the string pattern
     const [pick, pickOdds, badge] = pickVerticalBarOdds.split("|");
@@ -83,7 +84,7 @@ export default function MatchupCard(props: MatchupWithOdds) {
     const updatedPickHistory =
       pickHistory?.filter(({ pick }) => !(isChangingPick && existingPick === pick)) ?? [];
 
-    const newPickHistory = {
+    const newPickHistory: PickHistory = {
       matchupId: id,
       pick,
       result: TBD_PICK_RESULT_STATUS,

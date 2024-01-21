@@ -4,16 +4,7 @@ import { options } from "@/app/api/auth/[...nextauth]/options";
 import prisma from "@/lib/prisma";
 import { IPick, Matchup, ParlayWithPicks } from "@/lib/types/interfaces";
 import { getServerSession } from "next-auth/next";
-import { revalidateTag } from "next/cache";
 import { z } from "zod";
-
-// const PickHistory = z.object({
-//   matchupId: z.string(),
-//   pick: z.string(),
-//   result: z.string(),
-// });
-// const ArrayOfPickHistory = z.array(PickHistory).nullable();
-// const StringifiedPickHistorySchema = z.string(ArrayOfPickHistory).nullable();
 
 const IPickSchema = z.object({
   pickId: z.string().optional(), // default uuid assigned on pick insertion by prisma
@@ -34,7 +25,6 @@ export const upsertParlay = async (formData: FormData) => {
 
   try {
     const rawPicks = formData.get("picks");
-    // if (!rawPicks) return genericError;
     const validation = StringifiedSchema.safeParse(rawPicks);
 
     if (!validation.success) {
@@ -42,14 +32,6 @@ export const upsertParlay = async (formData: FormData) => {
       console.log(validation.error);
       return genericError;
     }
-
-    // if (!pickHistoryValidation.success) {
-    //   console.log("PICK HISTORY VALIDATION FAILED");
-
-    //   console.log(pickHistoryValidation.error);
-    //   return genericError;
-    // }
-    // console.log({ picks, pickHistory });
 
     const session = await getServerSession(options);
 
@@ -122,12 +104,6 @@ export const upsertParlay = async (formData: FormData) => {
       return { error: "At least 1 matchup has started" };
     }
 
-    // interface UpdateParlayAndDeletedPicks {
-    //   updatedParlay: ParlayWithPicksAndOdds;
-    //   deletedPickIds: string[];
-    // }
-
-    // const updateParlayAndDeletedPicks: UpdateParlayAndDeletedPicks = await prisma.$transaction(
     await prisma.$transaction(async tx => {
       const existingDbPicks = parlayId === latestParlay?.id ? latestParlay.picks : [];
       const activePicksIds = picks.map(({ pickId }) => pickId);
@@ -176,67 +152,7 @@ export const upsertParlay = async (formData: FormData) => {
           }
         }
       }
-
-      // return await tx.pick.findMany({ where: { parlayId }}  );
-      // return tx.parlay.findUnique({ where: { id: parlayId }});
-      // const updatedParlay = await tx.parlay.findUniqueOrThrow({
-      //   where: {
-      //     id: parlayId,
-      //   },
-      //   include: {
-      //     picks: {
-      //       orderBy: {
-      //         createdAt: "desc",
-      //       },
-      //       include: {
-      //         odds: true,
-      //       },
-      //     },
-      //   },
-      // });
-      // return { updatedParlay, deletedPickIds: pickIdsToDelete ?? [] };
     });
-
-    // interface MatchupAndPickIds {
-    //   matchupIds: string[];
-    //   pickIds: string[];
-    //   activePicksHistory: PickHistory[];
-    // }
-
-    // const activeMatchupsMap = updateParlayAndDeletedPicks.updatedParlay.picks.reduce((acc, cv) => {
-    //   const { id, matchupId, pick, result } = cv;
-    //   acc.set("matchupIds", [...(acc.get("matchupIds") ?? []), matchupId]);
-    //   acc.set("pickIds", [...(acc.get("pickIds") ?? []), id]);
-    //   acc.set("activePicksHistory", [
-    //     ...(acc.get("activePicksHistory") ?? []),
-    //     { matchupId, pick, result, pickId: id },
-    //   ]);
-    //   return acc;
-    // }, new Map<MatchupAndPickIds>());
-
-    // const activeMatchups = await getActiveMatchups(
-    //   // updatedParlay.picks.map(({ matchupId }) => matchupId)
-    //   activeMatchupsMap.get("matchupIds") ?? []
-    // );
-    // const activePicks = getActivePicks(updateParlayAndDeletedPicks.updatedParlay, activeMatchups);
-    // const pickHistory: PickHistory[] = pickHistoryValidation.data
-    //   ? JSON.parse(pickHistoryValidation.data)
-    //   : [];
-    // // const pickHistory: PickHistory[] = pickHistoryValidation.data ?? [];
-
-    // const updatedPickHistory: PickHistory[] = [
-    //   ...new Set(...activeMatchupsMap.get("activePicksHistory"), ...pickHistory),
-    // ].filter(pick => {
-    //   return !updateParlayAndDeletedPicks.deletedPickIds.includes(pick?.pickId);
-    // });
-
-    revalidateTag("parlays");
-
-    // return {
-    //   activePicks,
-    //   pickHistory: updatedPickHistory,
-    //   success: true,
-    // };
   } catch (error) {
     console.log(error);
     return genericError;
