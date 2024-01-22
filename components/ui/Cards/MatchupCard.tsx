@@ -114,7 +114,10 @@ export default function MatchupCard(props: MatchupWithOdds) {
         open={confirmPickModalOpen}
         setConfirmPickModalOpen={setConfirmPickModalOpen}
       />
-      <div className="flex flex-grow flex-shrink-0 card m-2 bg-neutral text-neutral-content md:flex">
+      <div
+        className="flex flex-grow flex-shrink-0 card m-2 bg-neutral text-neutral-content md:flex"
+        key={id}
+      >
         <div className="stats shadow flex rounded-none">
           <div className="stat place-items-start">
             <div className="stat-title">{strLeague}</div>
