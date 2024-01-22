@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import ComponentError from "@/components/utils/ComponentError";
 import MatchupBoard from "./components/matchups/MatchupBoard";
 import { GetMatchups, getMatchups } from "./dataFetching/getMatchups";
