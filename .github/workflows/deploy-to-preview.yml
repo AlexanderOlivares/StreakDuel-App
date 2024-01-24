@@ -7,13 +7,6 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    types:
-      - opened
-      - edited
-      - synchronize
-    branches:
-      - main
 jobs:
   Deploy-Preview:
     runs-on: ubuntu-latest
