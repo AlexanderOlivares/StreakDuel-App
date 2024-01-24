@@ -1,15 +1,46 @@
+name: release-please
+
 on:
   push:
     branches:
       - main
+  pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
 
 permissions:
   contents: write
   pull-requests: write
 
-name: release-please
-
 jobs:
+  lint-and-type:
+    name: Lint and type check
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run tsc
+
   release-please:
     runs-on: ubuntu-latest
     steps:
