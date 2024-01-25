@@ -2,6 +2,7 @@ import type { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import prisma from "@/lib/prisma";
 import { PrismaAdapter } from "@auth/prisma-adapter";
+import { DefaultSession } from "@/@types/next-auth";
 
 export const options: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -11,17 +12,21 @@ export const options: NextAuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
-  // callbacks: {
-  //   async session(session, user) {
-  //     // Fetch custom data from your database based on the user's information
-  //     const userData = await getUserDataFromDB(user);
+  callbacks: {
+    async session({ session }: { session: DefaultSession }) {
+      const user = await prisma.user.findUnique({
+        where: { email: session.user?.email ?? "" },
+        select: { name: true, sessions: { take: 1, select: { id: true } } },
+      });
 
-  //     // Add the custom data to the session
-  //     session.customData = userData;
+      if (!user || !session?.user) {
+        return session;
+      }
 
-  //     return session;
-  //   },
-  //   // Add other callbacks as needed
-  // },
+      session.user.isInitialLogin = user.sessions.length === 0;
+      session.user.name = user.name;
+      return session;
+    },
+  },
   secret: process.env.NEXT_AUTH_SECRET,
 };
