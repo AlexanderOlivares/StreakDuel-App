@@ -1,4 +1,4 @@
-name: Deploy to Preview
+name: Deploy to Staging
 env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
@@ -21,4 +21,4 @@ jobs:
       - name: Deploy Project Artifacts to Vercel
         run: |
           url="$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})"
-          vercel alias --token=${{ secrets.VERCEL_TOKEN }} set "$url" staging.streakduel.com
+          vercel alias --token=${{ secrets.VERCEL_TOKEN }} set "$url" staging-streakduel.vercel.app
