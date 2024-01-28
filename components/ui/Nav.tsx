@@ -55,7 +55,7 @@ export default function Nav() {
             </li>
           </ul>
         </div>
-        <a className="btn btn-ghost normal-case text-xl">Power Parlay</a>
+        <a className="btn btn-ghost normal-case text-xl">Streak Duel</a>
       </div>
       <div className="navbar-center hidden lg:flex">
         <ul className="menu menu-horizontal px-1">
