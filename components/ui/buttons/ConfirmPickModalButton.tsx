@@ -5,7 +5,7 @@ function ConfirmPickModalButton() {
   const { pending } = useFormStatus();
 
   return (
-    <button className="btn" type="submit" aria-disabled={pending}>
+    <button className="btn uppercase" type="submit" aria-disabled={pending}>
       {pending ? "saving..." : "save"}
     </button>
   );

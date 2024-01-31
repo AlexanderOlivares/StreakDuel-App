@@ -5,7 +5,7 @@ import { useFormStatus } from "react-dom";
 function WelcomeFormButton() {
   const { pending } = useFormStatus();
   return (
-    <button className="btn btn-md" type="submit" disabled={pending}>
+    <button className="btn btn-md uppercase" type="submit" disabled={pending}>
       {pending ? "saving..." : "save and continue"}
     </button>
   );

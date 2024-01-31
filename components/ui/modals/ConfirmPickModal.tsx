@@ -185,7 +185,7 @@ function ConfirmPickModal({ open, setConfirmPickModalOpen }: ConfirmPickModalPro
               </table>
             </div>
             <div className="modal-backdrop">
-              <button className="btn" onClick={handleClose}>
+              <button className="btn uppercase" onClick={handleClose}>
                 close
               </button>
               <ConfirmPickModalButton />
