@@ -1,14 +1,14 @@
 declare module "next-auth" {
-  interface DefaultSession {
+  interface Session {
     user?: {
       id: string;
       name?: string | null;
       email?: string | null;
       image?: string | null;
       // Custom prop to prompt user to change display name
-      isInitialLogin?: boolean;
+      mustUpdateUsername?: boolean;
     };
     expires: ISODateString;
   }
 }
-export { DefaultSession };
+export { Session };
