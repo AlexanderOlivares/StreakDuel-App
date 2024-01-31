@@ -12,7 +12,7 @@ export interface ParlayState {
   locked: boolean;
 }
 
-const defaultState: ParlayState = {
+export const defaultState: ParlayState = {
   parlays: [],
   pickHistory: [],
   dbPickHistory: [],
@@ -72,6 +72,8 @@ function parlayContextReducer(state: ParlayState, action: ParlayAction): ParlayS
         dbActivePicks: payload.dbActivePicks,
         dbPickHistory: payload.dbPickHistory,
       };
+    case "logout":
+      return defaultState;
     default:
       return state;
   }

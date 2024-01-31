@@ -2,15 +2,20 @@ import React from "react";
 import { signIn, signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
-// import { useParlayContext } from "@/app/context/ParlayProvider";
+import { useParlayContext, defaultState } from "@/context/ParlayProvider";
 
 export default function Nav() {
   const { data: session, status } = useSession();
-  // const { state: parlayState } = useParlayContext();
+  const parlayContext = useParlayContext();
   console.log({
     session,
     status,
   });
+
+  const logout = () => {
+    signOut();
+    parlayContext.dispatch({ type: "logout", payload: defaultState });
+  };
 
   return (
     <div className="navbar bg-base-100">
@@ -116,7 +121,7 @@ export default function Nav() {
                 <a>Settings</a>
               </li>
               <li>
-                <a onClick={() => signOut()}>Logout</a>
+                <a onClick={logout}>Logout</a>
               </li>
             </ul>
           </div>
