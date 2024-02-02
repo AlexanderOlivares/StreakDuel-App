@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.2.0](https://github.com/AlexanderOlivares/StreakDuel-App/compare/v0.1.0...v0.2.0) (2024-02-02)
+
+
+### Features
+
+* Add email provider for next-auth ([cc04339](https://github.com/AlexanderOlivares/StreakDuel-App/commit/cc04339990b83f2235cfdc615041a7becd8d1433))
+* Add nodemailer for next-auth email ([b42c9d9](https://github.com/AlexanderOlivares/StreakDuel-App/commit/b42c9d961b25ea13851de058fe67d8d801a2cb4f))
+* Prompt new users create a username for display purposes ([16f5617](https://github.com/AlexanderOlivares/StreakDuel-App/commit/16f5617fcf5227e1bc6fd75758b2c2607ddee349))
+* Upgrade daisyUI version ([3f2fb8f](https://github.com/AlexanderOlivares/StreakDuel-App/commit/3f2fb8fdc831389ff39ed0cd57df4cf9cb94e3f8))
+* Use uppercase class on buttons per daisyUI v4 ([4328438](https://github.com/AlexanderOlivares/StreakDuel-App/commit/4328438110bd3f4ec65f542bc4b8cfe05f99af92))
+
+
+### Bug Fixes
+
+* Add missing 'use client' to error component ([fc04e1e](https://github.com/AlexanderOlivares/StreakDuel-App/commit/fc04e1e534f5cf0aa1356d924ade709b97f5d962))
+* Reset to defualt parlay context on logout ([4120be0](https://github.com/AlexanderOlivares/StreakDuel-App/commit/4120be010bdacd90818d5d25b04a8f6231c14f35))
+
 ## 0.1.0 (2024-01-25)
 
 
